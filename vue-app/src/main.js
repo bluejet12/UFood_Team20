@@ -1,8 +1,5 @@
-import Vue from 'vue';
+import { createApp } from 'vue'; // Import createApp instead of default Vue import
 import App from './App.vue';
 
-Vue.config.productionTip = false;
-
-new Vue({
-  render: h => h(App),
-}).$mount('#app');
+const app = createApp(App); // Create the app instance
+app.mount('#app'); // Mount the app to the #app element
