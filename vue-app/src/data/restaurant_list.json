@@ -1,0 +1,68 @@
+[
+    {
+        "id": 1,
+        "name": "Burger King",
+        "genres": ["Fast Food", "Burgers"],
+        "priceRange": "$",
+        "averageRating": 3.5,
+        "location": {
+          "latitude": 40.712776,
+          "longitude": -74.005974
+        }
+      },
+      {
+        "id": 2,
+        "name": "Sweet Greens",
+        "genres": ["Healthy", "Vegan"],
+        "priceRange": "$$",
+        "averageRating": 4.7,
+        "location": {
+          "latitude": 34.052235,
+          "longitude": -118.243683
+        }
+      },
+      {
+        "id": 3,
+        "name": "Dunkin' Donuts",
+        "genres": ["Dessert", "Coffee"],
+        "priceRange": "$",
+        "averageRating": 4.0,
+        "location": {
+          "latitude": 41.878113,
+          "longitude": -87.629799
+        }
+      },
+      {
+        "id": 4,
+        "name": "Chipotle",
+        "genres": ["Mexican", "Fast Food"],
+        "priceRange": "$$",
+        "averageRating": 4.2,
+        "location": {
+          "latitude": 37.774929,
+          "longitude": -122.419418
+        }
+      },
+    {
+        "id": 5,
+        "name": "Subway",
+        "genres": ["Fast Food", "Sandwiches"],
+        "priceRange": "$",
+        "averageRating": 3.9,
+        "location": {
+          "latitude": 40.712776,
+          "longitude": -74.005974
+        }   
+    },
+    {
+        "id": 6,
+        "name": "Starbucks",
+        "genres": ["Coffee", "Dessert"],
+        "priceRange": "$",
+        "averageRating": 4.5,
+        "location": {
+          "latitude": 34.052235,
+          "longitude": -118.243683
+        }
+    }
+  ]
