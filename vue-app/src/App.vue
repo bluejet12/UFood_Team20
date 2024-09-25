@@ -1,15 +1,19 @@
+<!-- src/App.vue -->
 <template>
     <div id="app">
-      <HomePage />
+      <MainNavBar />
+      <router-view />
     </div>
   </template>
   
   <script>
-  import HomePage from './components/Homepage.vue';
-  
+
+  import MainNavBar from './components/MainNavbar.vue';
+
+
   export default {
     components: {
-      HomePage,
+      MainNavBar,
     },
   };
   </script>

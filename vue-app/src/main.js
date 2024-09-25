@@ -1,5 +1,13 @@
-import { createApp } from 'vue'; // Import createApp instead of default Vue import
+// src/main.js
+import { createApp } from 'vue'; // Import Vue 3's createApp method
 import App from './App.vue';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap styles
+import router from './router';
+import {auth} from "../firebaseConfig";
 
-const app = createApp(App); // Create the app instance
-app.mount('#app'); // Mount the app to the #app element
+// Create the Vue app instance
+const app = createApp(App);
+
+app.use(router);
+app.config.globalProperties.$auth = auth;
+app.mount('#app');
