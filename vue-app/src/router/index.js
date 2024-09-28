@@ -4,7 +4,7 @@ import HomePage from '@/components/Homepage.vue'; // Update path as needed
 import AuthLogin from '@/components/Authentification/AuthLogin.vue';
 import AuthRegister from '@/components/Authentification/AuthRegister.vue';
 import ProfilePage from '@/components/ProfilePage.vue';
-
+import ResturantPage from "@/components/ResturantPage.vue";
 // Define your routes
 const routes = [
     {
@@ -20,6 +20,12 @@ const routes = [
         name: 'profile',
         component: ProfilePage,
         meta: { requiresAuth: true },
+    },
+    {
+        path: '/restaurant/:id',
+        name: 'restaurant',
+        component: ResturantPage,
+        props: true,
     },
 ];
 
