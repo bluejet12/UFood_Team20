@@ -1,68 +1,140 @@
 [
-    {
-        "id": 1,
-        "name": "Burger King",
-        "genres": ["Fast Food", "Burgers"],
-        "priceRange": "$",
-        "averageRating": 3.5,
-        "location": {
-          "latitude": 40.712776,
-          "longitude": -74.005974
-        }
+  {
+      "id": "1",
+      "name": "Burger King",
+      "address": "123 Main Street, New York, NY",
+      "tel": "(123) 456-7890",
+      "location": {
+          "type": "Point",
+          "coordinates": [-74.005974, 40.712776]
       },
-      {
-        "id": 2,
-        "name": "Sweet Greens",
-        "genres": ["Healthy", "Vegan"],
-        "priceRange": "$$",
-        "averageRating": 4.7,
-        "location": {
-          "latitude": 34.052235,
-          "longitude": -118.243683
-        }
+      "opening_hours": {
+          "monday": "10h-22h",
+          "tuesday": "10h-22h",
+          "wednesday": "10h-22h",
+          "thursday": "10h-22h",
+          "friday": "10h-23h",
+          "saturday": "10h-23h",
+          "sunday": "10h-21h"
       },
-      {
-        "id": 3,
-        "name": "Dunkin' Donuts",
-        "genres": ["Dessert", "Coffee"],
-        "priceRange": "$",
-        "averageRating": 4.0,
-        "location": {
-          "latitude": 41.878113,
-          "longitude": -87.629799
-        }
+      "pictures": ["burgerking.com/pic1", "burgerking.com/pic2"],
+      "genres": ["Fast Food"],
+      "price_range": 1,
+      "rating": 3.5
+  },
+  {
+      "id": "2",
+      "name": "Sweet Greens",
+      "address": "456 Ocean Avenue, Los Angeles, CA",
+      "tel": "(987) 654-3210",
+      "location": {
+          "type": "Point",
+          "coordinates": [-118.243683, 34.052235]
       },
-      {
-        "id": 4,
-        "name": "Chipotle",
-        "genres": ["Mexican", "Fast Food"],
-        "priceRange": "$$",
-        "averageRating": 4.2,
-        "location": {
-          "latitude": 37.774929,
-          "longitude": -122.419418
-        }
+      "opening_hours": {
+          "monday": "09h-21h",
+          "tuesday": "09h-21h",
+          "wednesday": "09h-21h",
+          "thursday": "09h-21h",
+          "friday": "09h-22h",
+          "saturday": "09h-22h",
+          "sunday": "09h-20h"
       },
-    {
-        "id": 5,
-        "name": "Subway",
-        "genres": ["Fast Food", "Sandwiches"],
-        "priceRange": "$",
-        "averageRating": 3.9,
-        "location": {
-          "latitude": 40.712776,
-          "longitude": -74.005974
-        }   
-    },
-    {
-        "id": 6,
-        "name": "Starbucks",
-        "genres": ["Coffee", "Dessert"],
-        "priceRange": "$",
-        "averageRating": 4.5,
-        "location": {
-          "latitude": 34.052235,
-          "longitude": -118.243683
-        }
-    }
-  ]
+      "pictures": ["sweetgreens.com/pic1", "sweetgreens.com/pic2"],
+      "genres": ["Healthy", "Vegan"],
+      "price_range": 2,
+      "rating": 4.7
+  },
+  {
+      "id": "3",
+      "name": "Dunkin' Donuts",
+      "address": "789 Wacker Drive, Chicago, IL",
+      "tel": "(312) 123-4567",
+      "location": {
+          "type": "Point",
+          "coordinates": [-87.629799, 41.878113]
+      },
+      "opening_hours": {
+          "monday": "05h-20h",
+          "tuesday": "05h-20h",
+          "wednesday": "05h-20h",
+          "thursday": "05h-20h",
+          "friday": "05h-21h",
+          "saturday": "06h-21h",
+          "sunday": "06h-19h"
+      },
+      "pictures": ["dunkindonuts.com/pic1", "dunkindonuts.com/pic2"],
+      "genres": ["Coffee"],
+      "price_range": 1,
+      "rating": 4.0
+  },
+  {
+      "id": "4",
+      "name": "Chipotle",
+      "address": "321 Market Street, San Francisco, CA",
+      "tel": "(415) 987-6543",
+      "location": {
+          "type": "Point",
+          "coordinates": [-122.419418, 37.774929]
+      },
+      "opening_hours": {
+          "monday": "10h-22h",
+          "tuesday": "10h-22h",
+          "wednesday": "10h-22h",
+          "thursday": "10h-22h",
+          "friday": "10h-23h",
+          "saturday": "10h-23h",
+          "sunday": "10h-21h"
+      },
+      "pictures": ["chipotle.com/pic1", "chipotle.com/pic2"],
+      "genres": ["Mexican", "Fast Food"],
+      "price_range": 2,
+      "rating": 4.2
+  },
+  {
+      "id": "5",
+      "name": "Subway",
+      "address": "987 5th Avenue, New York, NY",
+      "tel": "(212) 555-9876",
+      "location": {
+          "type": "Point",
+          "coordinates": [-74.005974, 40.712776]
+      },
+      "opening_hours": {
+          "monday": "09h-21h",
+          "tuesday": "09h-21h",
+          "wednesday": "09h-21h",
+          "thursday": "09h-21h",
+          "friday": "09h-22h",
+          "saturday": "09h-22h",
+          "sunday": "09h-20h"
+      },
+      "pictures": ["subway.com/pic1", "subway.com/pic2"],
+      "genres": ["Fast Food"],
+      "price_range": 1,
+      "rating": 3.9
+  },
+  {
+      "id": "6",
+      "name": "Starbucks",
+      "address": "654 Hill Street, Los Angeles, CA",
+      "tel": "(213) 555-6543",
+      "location": {
+          "type": "Point",
+          "coordinates": [-118.243683, 34.052235]
+      },
+      "opening_hours": {
+          "monday": "06h-20h",
+          "tuesday": "06h-20h",
+          "wednesday": "06h-20h",
+          "thursday": "06h-20h",
+          "friday": "06h-21h",
+          "saturday": "07h-21h",
+          "sunday": "07h-19h"
+      },
+      "pictures": ["starbucks.com/pic1", "starbucks.com/pic2"],
+      "genres": ["Coffee"],
+      "price_range": 1,
+      "rating": 4.5
+  }
+]
