@@ -1,6 +1,5 @@
 <template>
-  <div class="home-page d-flex  mt-5">
-
+  <div class="home-page d-flex mt-5">
     <!-- Search and Filter Section -->
     <div class="container">
       <div class="input-group mb-3">
@@ -18,8 +17,6 @@
           <option value="Vegan">Vegan</option>
           <option value="Coffee">Coffee</option>
         </select>
-
-        
         <select class="form-select ml-2" v-model="selectedPriceRange" @change="filterRestaurants" style="width: 50px;">
           <option value="">All Prices</option>
           <option value="1">1</option>
@@ -27,30 +24,29 @@
           <option value="3">3</option>
           <option value="4">4</option>
         </select>
-
       </div>
 
       <!-- Filtered Restaurants List -->
       <ul class="list-group list-unstyled">
-        <li 
-          class="list-group-item" 
-          v-for="restaurant in filteredRestaurants" 
-          :key="restaurant.id"
-          @click="handleClick(restaurant)"
-          style="cursor: pointer;"
+        <li
+            class="list-group-item"
+            v-for="restaurant in filteredRestaurants"
+            :key="restaurant.id"
         >
-          <strong>{{ restaurant.name }}</strong> -
-          {{ restaurant.genres.join(', ') }} -
-          {{ '$'.repeat(restaurant.price_range)}} -
-          {{ restaurant.rating }}
+          <router-link :to="'/restaurant/' + restaurant.id">
+            <strong>{{ restaurant.name }}</strong> -
+            {{ restaurant.genres.join(', ') }} -
+            {{ '$'.repeat(restaurant.price_range) }} -
+            {{ restaurant.rating }}
+          </router-link>
         </li>
       </ul>
     </div>
   </div>
 </template>
+
 <script>
 import restaurants from "../data/restaurant_list.json";
-import { getAuth } from "firebase/auth"; // Import Firebase Auth
 
 export default {
   name: "HomePageComponent",
@@ -61,13 +57,6 @@ export default {
       selectedPriceRange: '',
       restaurants: restaurants || {restaurants: []}
     };
-  },
-  created() {
-    const auth = getAuth();
-    // Listen for authentication state changes
-    auth.onAuthStateChanged((user) => {
-      this.user = user;
-    });
   },
   computed: {
     filteredRestaurants() {
@@ -87,30 +76,23 @@ export default {
 
       if (this.selectedPriceRange) {
         filtered = filtered.filter(restaurant =>
-          restaurant.price_range == this.selectedPriceRange
+            restaurant.price_range == this.selectedPriceRange
         );
       }
+
       return filtered;
     }
-  },
-  methods: {
-    filterRestaurants() {
-      this.filteredRestaurants;
-    },
   }
 };
 </script>
+
 <style scoped>
+.list-unstyled {
+  list-style-type: none;
+  padding: 0;
+}
 
-  
-  /* Remove bullet points */
-  .list-unstyled {
-    list-style-type: none;
-    padding: 0;
-  }
-
-  /* Optional: make sure container width is limited so it's not too wide */
-  .container {
-    max-width: 400px;
-  }
+.container {
+  max-width: 400px;
+}
 </style>

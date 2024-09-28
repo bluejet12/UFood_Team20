@@ -2,11 +2,26 @@
   <div class="restaurant-page">
     <div class="container">
       <h1>{{ restaurant.name }}</h1>
-      <p><strong>Genres :</strong> {{ restaurant.genres.join(', ') }}</p>
-      <p><strong>Fourchette de prix :</strong> {{ restaurant.priceRange }}</p>
-      <p><strong>Cote moyenne :</strong> {{ restaurant.averageRating }}</p>
-      <p><strong>Latitude :</strong> {{ restaurant.location.latitude }}</p>
-      <p><strong>Longitude :</strong> {{ restaurant.location.longitude }}</p>
+      <p><strong>Address:</strong> {{ restaurant.address }}</p>
+      <p><strong>Telephone:</strong> {{ restaurant.tel }}</p>
+      <p><strong>Genres:</strong> {{ restaurant.genres.join(', ') }}</p>
+      <p><strong>Price Range:</strong> {{ '$'.repeat(restaurant.price_range) }}</p>
+      <p><strong>Rating:</strong> {{ restaurant.rating }}</p>
+      <p><strong>Opening Hours:</strong></p>
+      <ul>
+        <li v-for="(hours, day) in restaurant.opening_hours" :key="day">
+          <strong>{{ day }}:</strong> {{ hours }}
+        </li>
+      </ul>
+      <p><strong>Location:</strong> Latitude {{ restaurant.location.coordinates[1] }}, Longitude {{ restaurant.location.coordinates[0] }}</p>
+      <div v-if="restaurant.pictures && restaurant.pictures.length">
+        <h3>Pictures</h3>
+        <ul>
+          <li v-for="(picture, index) in restaurant.pictures" :key="index">
+            <img :src="picture" :alt="'Picture ' + (index + 1)" />
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -22,16 +37,15 @@ export default {
     };
   },
   created() {
-    this.fetchRestaurantDetails(this.id);
+    this.fetchRestaurantDetails();
   },
   methods: {
-    fetchRestaurantDetails(id) {
-
-      const restaurant = restaurants.find(r => r.id === parseInt(id));
+    fetchRestaurantDetails() {
+      const restaurant = restaurants.find(r => r.id === this.id);
       if (restaurant) {
         this.restaurant = restaurant;
       } else {
-        console.error('Restaurant non trouvé');
+        console.error('Restaurant not found');
       }
     }
   }
@@ -57,8 +71,13 @@ h1 {
   background-color: #fff;
 }
 
-p {
+p, ul {
   font-size: 1.1rem;
   margin-bottom: 10px;
+}
+
+img {
+  max-width: 200px;
+  margin: 10px 0;
 }
 </style>
