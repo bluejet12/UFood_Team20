@@ -22,18 +22,40 @@
           </li>
         </ul>
       </div>
+      <div style="height: 300px">
+        <l-map ref="map" v-model:zoom="zoom" :center="[restaurant.location.coordinates[1], restaurant.location.coordinates[0]]">
+          <l-tile-layer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              layer-type="base"
+              name="OpenStreetMap"></l-tile-layer>
+          <l-marker :lat-lng="[restaurant.location.coordinates[1], restaurant.location.coordinates[0]]">
+            <l-popup>
+              {{restaurant.name}} <br>
+              {{restaurant.address}}
+            </l-popup>
+          </l-marker>
+        </l-map>
+      </div>
+      <button @click="getDirections(restaurant)">Directions</button>
+      <p v-bind:style="{color: routeColor}">{{route}}</p>
     </div>
   </div>
 </template>
 
 <script>
 import restaurants from '../data/restaurant_list.json';
+import "leaflet/dist/leaflet.css";
+import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 
 export default {
+  components: {LPopup, LMarker, LMap, LTileLayer},
   props: ['id'],
   data() {
     return {
       restaurant: {},
+      zoom: 18,
+      route: {},
+      routeColor: {},
     };
   },
   created() {
@@ -44,9 +66,40 @@ export default {
       const restaurant = restaurants.find(r => r.id === this.id);
       if (restaurant) {
         this.restaurant = restaurant;
+        this.routeColor = "black";
+        this.route = "";
       } else {
         console.error('Restaurant not found');
       }
+    },
+    getDirections(restaurant){
+      let url;
+      function success(position){
+        let latitude = position.coords.latitude;
+        let longitude = position.coords.longitude;
+        url = "http://routing.openstreetmap.de/routed-car/route/v1/driving/";
+        console.log(url);
+        url += longitude + "," + latitude + ";" + restaurant.location.coordinates[0] + ","
+            + restaurant.location.coordinates[1] + "?overview=false&steps=true";
+        console.log(url);
+        fetch(url).then(function(response) {
+          return response.json();
+        }).then(function (data) {
+          console.log(data);
+          if(data.code === "Ok"){
+            let routeData = data.routes[0];
+            console.log(routeData);
+            this.route = "Distance: ";
+          }
+          else if(data.code === "NoRoute"){
+            this.route = "No route was found."
+            this.routeColor = "red";
+          }
+        }).catch(function(error) {
+          console.log(error);
+        });
+      }
+      navigator.geolocation.getCurrentPosition(success);
     }
   }
 };
