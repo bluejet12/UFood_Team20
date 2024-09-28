@@ -21,7 +21,7 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <form class="form-inline mx-auto d-flex">
+        <form class="form-inline d-flex ml-auto custom-right-margin ">
           <input
               class="form-control mr-sm-2"
               type="search"
@@ -157,5 +157,8 @@ export default {
 .dropdown-menu {
   border: none;
   border-radius: 8px;
+}
+.custom-right-margin {
+  margin-right: 130px;
 }
 </style>
