@@ -78,6 +78,8 @@
 <script>
 import { auth } from '../../firebaseConfig'; // Adjust the path as needed
 import { onAuthStateChanged } from 'firebase/auth';
+import restaurants from "../data/restaurant_list.json";
+
 
 export default {
   name: 'ProfilePage',
@@ -99,16 +101,40 @@ export default {
       // Fetch authenticated user data from Firebase
       onAuthStateChanged(auth, (user) => {
         this.user = user;
+        if (user) {
+          this.fetchRecentRestaurants(); 
+          this.fetchUserScore(); 
+        }
       });
     },
-    fetchRecentRestaurants() {
-      // Mock data for recently viewed restaurants with visit counts
-      // Replace this with your actual logic to fetch recently viewed restaurants
-      this.recentRestaurants = [
-        { id: 1, name: 'Mon Lapin', visitCount: 3 },
-        { id: 2, name: 'Kitano Shokudo', visitCount: 5 },
-        { id: 3, name: 'Mastard', visitCount: 2 },
-      ];
+    async fetchRecentRestaurants() {
+      const user = auth.currentUser;
+      if (user) {
+        const localRestaurants = []; // To store the restaurants with visit counts
+        const keys = Object.keys(localStorage);
+        
+        keys.forEach(key => {
+          if (key.startsWith(`visitCount-${user.uid}-`)) {
+            const restaurantId = key.split('-')[2]; // Extract restaurant ID from key
+            const visitCount = parseInt(localStorage.getItem(key));
+            
+            // Get restaurant name by ID
+            const restaurantName = this.getRestaurantNameById(restaurantId);
+            
+            if (restaurantName) {
+              localRestaurants.push({ id: restaurantId, name: restaurantName, visitCount });
+            }
+          }
+        });
+
+        this.recentRestaurants = localRestaurants;
+      } else {
+        this.recentRestaurants = [];
+      }
+    },
+    getRestaurantNameById(restaurantId) {
+      const restaurant = restaurants.find(r => r.id === restaurantId);
+      return restaurant ? restaurant.name : null;
     },
     fetchUserScore() {
       // Mock score value, replace this logic with actual score fetching from your backend

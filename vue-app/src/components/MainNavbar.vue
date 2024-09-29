@@ -83,9 +83,10 @@
 </template>
 
 <script>
-import { auth } from '../../firebaseConfig';
+import { auth} from '../../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import restaurants from "../data/restaurant_list.json";
+
 
 
 export default {
@@ -134,16 +135,28 @@ export default {
       }
     },
     selectSuggestion(name) {
-      // Set the search input to the selected suggestion
-      this.searchQuery = name;
-      this.filteredSuggestions = []; // Clear suggestions after selecting
-    },
-      async navigateToRestaurant(restaurant) {
-        this.$router.push(`/restaurant/${restaurant.id}`);
-        this.searchQuery = '';
-        this.filteredSuggestions = [];
 
+      this.searchQuery = name;
+      this.filteredSuggestions = []; 
     },
+async navigateToRestaurant(restaurant) {
+  const user = auth.currentUser;
+  if (user) {
+    const userKey = `visitCount-${user.uid}-${restaurant.id}`;
+
+    let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
+
+    visitCount += 1;
+
+    localStorage.setItem(userKey, visitCount);
+
+    this.$router.push(`/restaurant/${restaurant.id}`);
+
+
+    this.searchQuery = '';
+    this.filteredSuggestions = [];
+  } 
+},
   },
 };
 </script>
