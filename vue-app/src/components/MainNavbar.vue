@@ -9,54 +9,67 @@
       </a>
 
       <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNavDropdown"
-          aria-controls="navbarNavDropdown"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <form class="form-inline d-flex ml-auto custom-right-margin ">
+        <div class="form-inline d-flex ml-auto custom-right-margin position-relative">
+          <!-- Search Bar -->
           <input
-              class="form-control mr-sm-2"
-              type="search"
-              placeholder="Search restaurants"
-              aria-label="Search"
-              style="width: 300px;"
+            class="form-control mr-sm-2"
+            type="search"
+            v-model="searchQuery"
+            placeholder="Search restaurants"
+            aria-label="Search"
+            style="width: 300px;"
+            @input="SearchRestaurants"
           />
-          <button class="btn btn-outline-primary ml-2" type="submit">
-            Search
-          </button>
-        </form>
+
+          <!-- Suggestion Dropdown List -->
+          <ul 
+            v-if="filteredSuggestions.length"
+            class="list-group position-absolute suggestion-dropdown" 
+          >
+            <li
+              v-for="(suggestion, index) in filteredSuggestions"
+              :key="index"
+              class="list-group-item list-group-item-action"
+              @click="navigateToRestaurant(suggestion)"
+            >
+              {{ suggestion.name }}
+            </li>
+          </ul>
+        </div>
+
         <ul class="navbar-nav ml-auto">
-          <!-- Display Sign In if the user is not authenticated -->
+          <!-- User Auth Logic -->
           <li class="nav-item" v-if="!user">
-            <a @click="navigateToLogin" class="btn btn-outline-primary">
-              Sign In
-            </a>
+            <a @click="navigateToLogin" class="btn btn-outline-primary">Sign In</a>
           </li>
-          <!-- Display avatar with user name and dropdown menu if the user is authenticated -->
           <li class="nav-item dropdown d-flex align-items-center" v-else>
             <img
-                :src="user.photoURL || defaultAvatar"
-                class="rounded-circle shadow-sm"
-                alt="User Avatar"
-                style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #90CAF9;"
+              :src="user.photoURL || defaultAvatar"
+              class="rounded-circle shadow-sm"
+              alt="User Avatar"
+              style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #90CAF9;"
             />
             <span class="ml-2 text-dark font-weight-bold">{{ user.displayName || 'User' }}</span>
             <a
-                class="nav-link dropdown-toggle d-flex align-items-center"
-                href="#"
-                id="userDropdown"
-                role="button"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
+              class="nav-link dropdown-toggle d-flex align-items-center"
+              href="#"
+              id="userDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
             ></a>
             <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="userDropdown">
               <a class="dropdown-item" href="#" @click="navigateToProfile">Profile Page</a>
@@ -72,11 +85,16 @@
 <script>
 import { auth } from '../../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import restaurants from "../data/restaurant_list.json";
+
 
 export default {
   name: 'MainNavbar',
   data() {
     return {
+      searchQuery: '',
+      restaurants: restaurants || { restaurants: [] },
+      filteredSuggestions: [], 
       user: null,
       defaultAvatar: 'https://via.placeholder.com/150/000000/FFFFFF/?text=Avatar', // Fallback avatar
     };
@@ -86,40 +104,57 @@ export default {
   },
   methods: {
     fetchUser() {
-      // Listen for changes in the authentication state
       onAuthStateChanged(auth, (user) => {
         this.user = user;
       });
     },
     navigateToLogin() {
-      console.log('Navigating to login');
-      this.$router.push('/login')
-          .then(() => {
-            console.log('Navigation to login successful');
-          })
-          .catch((error) => {
-            console.error('Navigation error:', error); // This will catch any routing errors
-          });
+      this.$router.push('/login');
     },
     navigateToProfile() {
-      // Navigate to the profile page (update the route as necessary)
       this.$router.push('/profile');
     },
     async logoutUser() {
-      // Log out the user and navigate to the home page
       try {
         await signOut(auth);
         this.user = null;
-        this.$router.push('/'); // Redirect to home or another page after logout
+        this.$router.push('/');
       } catch (error) {
         console.error('Error logging out:', error);
       }
     },
+    SearchRestaurants() {
+      if (this.searchQuery.length > 0) {
+        // Filter restaurants based on input
+        this.filteredSuggestions = this.restaurants.filter(restaurant =>
+          restaurant.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      } else {
+        this.filteredSuggestions = [];
+      }
+    },
+    selectSuggestion(name) {
+      // Set the search input to the selected suggestion
+      this.searchQuery = name;
+      this.filteredSuggestions = []; // Clear suggestions after selecting
+    },
+      async navigateToRestaurant(restaurant) {
+        this.$router.push(`/restaurant/${restaurant.id}`);
+        this.searchQuery = '';
+        this.filteredSuggestions = [];
+
+    },
   },
 };
 </script>
-
 <style scoped>
+
+.suggestion-dropdown {
+  top: 45px; 
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
 .navbar {
   border-bottom: 2px solid #e9ecef; /* Light border for separation */
 }
@@ -159,6 +194,6 @@ export default {
   border-radius: 8px;
 }
 .custom-right-margin {
-  margin-right: 130px;
+  margin-left: 230px;
 }
 </style>

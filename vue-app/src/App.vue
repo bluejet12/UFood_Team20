@@ -2,7 +2,7 @@
 <template>
     <div id="app">
       <MainNavBar />
-      <router-view />
+      <router-view :key="$route.params.id"></router-view>
     </div>
   </template>
   
