@@ -92,7 +92,7 @@ export default {
       //Check if user is logged in
       if (user) {
         const userKey = `visitCount-${user.uid}-${restaurant.id}`;
-        
+        const timestampKey = `visitTimestamp-${user.uid}-${restaurant.id}`;
         // Retrieve the visit count 
         let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
         
@@ -102,6 +102,7 @@ export default {
         // Save the visit count of the user
         localStorage.setItem(userKey, visitCount);
         
+        localStorage.setItem(timestampKey, Date.now());//check the time of the visit
         
         this.$router.push(`/restaurant/${restaurant.id}`);
         

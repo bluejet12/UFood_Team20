@@ -94,7 +94,6 @@ export default {
   created() {
     this.fetchUser();
     this.fetchRecentRestaurants();
-    this.fetchUserScore();
   },
   methods: {
     fetchUser() {
@@ -103,34 +102,43 @@ export default {
         this.user = user;
         if (user) {
           this.fetchRecentRestaurants(); 
-          this.fetchUserScore(); 
         }
       });
     },
     async fetchRecentRestaurants() {
       const user = auth.currentUser;
       if (user) {
-        const localRestaurants = []; // To store the restaurants with visit counts
+        const localRestaurants = []; 
         const keys = Object.keys(localStorage);
         
         keys.forEach(key => {
-          if (key.startsWith(`visitCount-${user.uid}-`)) {
-            const restaurantId = key.split('-')[2]; // Extract restaurant ID from key
-            const visitCount = parseInt(localStorage.getItem(key));
-            
-            // Get restaurant name by ID
-            const restaurantName = this.getRestaurantNameById(restaurantId);
-            
-            if (restaurantName) {
-              localRestaurants.push({ id: restaurantId, name: restaurantName, visitCount });
-            }
-          }
-        });
-
-        this.recentRestaurants = localRestaurants;
-      } else {
-        this.recentRestaurants = [];
+      if (key.startsWith(`visitCount-${user.uid}-`)) {
+        const restaurantId = key.split('-')[2]; // Extract restaurant Id from key
+        const visitCount = parseInt(localStorage.getItem(key));
+        const visitTimestamp = parseInt(localStorage.getItem(`visitTimestamp-${user.uid}-${restaurantId}`)) || 0;
+        
+        // Get restaurant name by fetch Id
+        const restaurantName = this.getRestaurantNameById(restaurantId);
+        
+        if (restaurantName) {
+          localRestaurants.push({ id: restaurantId, name: restaurantName, visitCount, visitTimestamp });
+        }
       }
+    });
+
+    //using the visitTimestamp to sort the restaurants : not the best way to do it :(
+    localRestaurants.sort((a, b) => b.visitTimestamp - a.visitTimestamp);
+
+
+    // Get the 5 most recent restaurants visitied by the user
+    // We can adjust the number of restaurants to display as needed
+    this.recentRestaurants = localRestaurants.slice(0, 5);
+
+    this.fetchUserScore(localRestaurants);
+  } else {
+    this.recentRestaurants = [];
+    this.userScore = 0;
+  }
     },
     getRestaurantNameById(restaurantId) {
       const restaurant = restaurants.find(r => r.id === restaurantId);

@@ -143,12 +143,16 @@ async navigateToRestaurant(restaurant) {
   // Check if user is authenticated
   if (user) {
     const userKey = `visitCount-${user.uid}-${restaurant.id}`;
-    //use the localData to store the visit count
+    const timestampKey = `visitTimestamp-${user.uid}-${restaurant.id}`;
+
+    //Use the localData to store the visit count
     let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
     // Increment the visit count
     visitCount += 1;
     // Save the visit count of the user
     localStorage.setItem(userKey, visitCount);
+
+    localStorage.setItem(timestampKey, Date.now());//check the time of the visit
 
     this.$router.push(`/restaurant/${restaurant.id}`);
 
