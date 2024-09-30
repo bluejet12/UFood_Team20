@@ -50,6 +50,7 @@ import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 
 export default {
+  name: 'RestaurantPage',
   components: {LPopup, LMarker, LMap, LTileLayer},
   props: ['id'],
   data() {

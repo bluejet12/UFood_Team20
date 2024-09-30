@@ -1,4 +1,4 @@
-<!-- src/components/MainNavbar.vue -->
+<!-- src/components/Navigation.vue -->
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
     <div class="container-fluid">
@@ -89,7 +89,7 @@ import restaurants from "../data/restaurant_list.json";
 
 
 export default {
-  name: 'MainNavbar',
+  name: 'NavigationBar',
   data() {
     return {
       searchQuery: '',

@@ -1,16 +1,16 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePage from '@/components/Homepage.vue'; // Update path as needed
+import Home from '@/components/Home.vue'; // Update path as needed
 import AuthLogin from '@/components/Authentification/AuthLogin.vue';
 import AuthRegister from '@/components/Authentification/AuthRegister.vue';
-import ProfilePage from '@/components/ProfilePage.vue';
-import ResturantPage from "@/components/ResturantPage.vue";
+import User from '@/components/User.vue';
+import Restaurant from "@/components/Restaurant.vue";
 // Define your routes
 const routes = [
     {
         path: '/',
         name: 'home',
-        component: HomePage,
+        component: Home,
     },
     { path: '/login', name: 'login', component: AuthLogin },
     { path: '/register', name: 'register', component: AuthRegister },
@@ -18,13 +18,13 @@ const routes = [
     {
         path: '/profile',
         name: 'profile',
-        component: ProfilePage,
+        component: User,
         meta: { requiresAuth: true },
     },
     {
         path: '/restaurant/:id',
         name: 'restaurant',
-        component: ResturantPage,
+        component: Restaurant,
         props: true,
     },
 ];

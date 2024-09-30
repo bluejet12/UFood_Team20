@@ -1,19 +1,19 @@
 <!-- src/App.vue -->
 <template>
     <div id="app">
-      <MainNavBar />
+      <Navigation />
       <router-view :key="$route.params.id"></router-view>
     </div>
   </template>
   
   <script>
 
-  import MainNavBar from './components/MainNavbar.vue';
+  import Navigation from './components/Navigation.vue';
 
 
   export default {
     components: {
-      MainNavBar,
+      Navigation,
     },
   };
   </script>
