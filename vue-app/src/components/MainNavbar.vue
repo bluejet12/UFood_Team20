@@ -21,29 +21,28 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <div class="form-inline d-flex ml-auto custom-right-margin position-relative">
-          <!-- Search Bar -->
-          <input
-            class="form-control mr-sm-2"
-            type="search"
-            v-model="searchQuery"
-            placeholder="Search restaurants"
-            aria-label="Search"
-            style="width: 300px;"
-            @input="SearchRestaurants"
-          />
+        <div class="form-inline mr-auto custom-right-margin position-relative search-container">
+    <!-- Search Bar -->
+        <input
+          class="form-control mr-sm-2 search-bar"
+          type="search"
+          v-model="searchQuery"
+          placeholder="Search restaurants"
+          aria-label="Search"
+          @input="SearchRestaurants"
+        />
 
-          <!-- Suggestion Dropdown List -->
-          <ul 
-            v-if="filteredSuggestions.length"
-            class="list-group position-absolute suggestion-dropdown" 
+        <!-- Suggestion Dropdown List -->
+        <ul 
+          v-if="filteredSuggestions.length"
+          class="list-group position-absolute suggestion-dropdown" 
+        >
+          <li
+            v-for="(suggestion, index) in filteredSuggestions"
+            :key="index"
+            class="list-group-item list-group-item-action"
+            @click="navigateToRestaurant(suggestion)"
           >
-            <li
-              v-for="(suggestion, index) in filteredSuggestions"
-              :key="index"
-              class="list-group-item list-group-item-action"
-              @click="navigateToRestaurant(suggestion)"
-            >
               {{ suggestion.name }}
             </li>
           </ul>
@@ -83,7 +82,7 @@
 </template>
 
 <script>
-import { auth} from '../../firebaseConfig';
+import { auth } from '../../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import restaurants from "../data/restaurant_list.json";
 
@@ -141,18 +140,19 @@ export default {
     },
 async navigateToRestaurant(restaurant) {
   const user = auth.currentUser;
+  // Check if user is authenticated
   if (user) {
     const userKey = `visitCount-${user.uid}-${restaurant.id}`;
-
+    //use the localData to store the visit count
     let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
-
+    // Increment the visit count
     visitCount += 1;
-
+    // Save the visit count of the user
     localStorage.setItem(userKey, visitCount);
 
     this.$router.push(`/restaurant/${restaurant.id}`);
 
-
+    // Clear the search query
     this.searchQuery = '';
     this.filteredSuggestions = [];
   } 
@@ -161,6 +161,24 @@ async navigateToRestaurant(restaurant) {
 };
 </script>
 <style scoped>
+/* Small screen style only*/ 
+@media (max-width: 576px) {
+  .search-container {
+    width: 50%; 
+    margin-left: 0; 
+  }
+
+  .search-bar {
+    width: 70%; 
+    margin-top: 8px;
+    margin-right: 0; 
+  }
+
+  .suggestion-dropdown {
+    width:  70%; 
+    margin-top: 3px;
+  }
+}
 
 .suggestion-dropdown {
   top: 45px; 

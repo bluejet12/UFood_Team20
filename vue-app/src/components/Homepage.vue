@@ -33,7 +33,8 @@
             v-for="restaurant in filteredRestaurants"
             :key="restaurant.id"
         >
-          <router-link :to="'/restaurant/' + restaurant.id">
+          <router-link :to="'/restaurant/' + restaurant.id"
+          @click.prevent="navigateToRestaurant(restaurant)">
             <strong>{{ restaurant.name }}</strong> -
             {{ restaurant.genres.join(', ') }} -
             {{ '$'.repeat(restaurant.price_range) }} -
@@ -47,6 +48,7 @@
 
 <script>
 import restaurants from "../data/restaurant_list.json";
+import { auth} from '../../firebaseConfig';
 
 export default {
   name: "HomePageComponent",
@@ -81,6 +83,31 @@ export default {
       }
 
       return filtered;
+    }
+  },
+  methods: {
+    async navigateToRestaurant(restaurant) {
+      const user = auth.currentUser;
+
+      //Check if user is logged in
+      if (user) {
+        const userKey = `visitCount-${user.uid}-${restaurant.id}`;
+        
+        // Retrieve the visit count 
+        let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
+        
+        // Increment the visit count
+        visitCount += 1;
+        
+        // Save the visit count of the user
+        localStorage.setItem(userKey, visitCount);
+        
+        
+        this.$router.push(`/restaurant/${restaurant.id}`);
+        
+        // Clear the search query
+        this.searchQuery = '';
+      } 
     }
   }
 };
