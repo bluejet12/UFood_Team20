@@ -4,9 +4,9 @@
       <h1>{{ restaurant.name }}</h1>
       <p><strong>Address:</strong> {{ restaurant.address }}</p>
       <p><strong>Telephone:</strong> {{ restaurant.tel }}</p>
-      <p><strong>Genres:</strong> {{ restaurant.genres.join(', ') }}</p>
+      <p><strong>Genres:</strong> {{ genres.join(', ') }}</p>
       <p><strong>Price Range:</strong> {{ '$'.repeat(restaurant.price_range) }}</p>
-      <p><strong>Rating:</strong> {{ restaurant.rating }}</p>
+      <p><strong>Rating:</strong> {{ restaurant.rating.toFixed(2) }}</p>
       <p><strong>Opening Hours:</strong></p>
       <ul>
         <li v-for="(hours, day) in restaurant.opening_hours" :key="day">
@@ -17,7 +17,7 @@
         Longitude {{ restaurant.location.coordinates[0] }}</p>
       <div v-if="restaurant.pictures && restaurant.pictures.length">
         <h3>Pictures</h3>
-        <ul>
+        <ul style="list-style-type: none;">
           <li v-for="(picture, index) in restaurant.pictures" :key="index">
             <img :src="picture" :alt="'Picture ' + (index + 1)" />
           </li>
@@ -38,14 +38,18 @@
           </l-marker>
         </l-map>
       </div>
-      <button @click="getDirections(restaurant)">Directions</button>
+      <div class="d-flex justify-content-between">
+        <button @click="getDirections(restaurant)" class="w-25">Directions</button>
+        <button @click="null" class="w-25">Favorite</button>
+        <button @click="null" class="w-25">Visited</button>
+      </div>
       <p v-bind:style="{color: routeColor}">{{route}}</p>
     </div>
   </div>
 </template>
 
 <script>
-import restaurants from '../data/restaurant_list.json';
+//import restaurants from '../data/restaurant_list.json';
 import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 
@@ -56,6 +60,8 @@ export default {
   data() {
     return {
       restaurant: {},
+      genres: [],
+      opening_hours: {},
       zoom: 18,
       route: {},
       routeColor: {},
@@ -65,10 +71,29 @@ export default {
     this.fetchRestaurantDetails();
   },
   methods: {
-    fetchRestaurantDetails() {
-      const restaurant = restaurants.find(r => r.id === this.id);
+    async fetchRestaurantDetails() {
+      let url = "https://ufoodapi.herokuapp.com/unsecure/restaurants/" + this.id;
+      const restaurant = await fetch(url).then(res => res.json())//restaurants.find(r => r.id === this.id);
       if (restaurant) {
         this.restaurant = restaurant;
+        restaurant.genres.forEach((genre) => {switch (genre){
+          case "fast-food": this.genres.push("Fast Food"); break;
+          case "libanais": this.genres.push("Libanais"); break;
+          case "hamburgers": this.genres.push("Hamburgers"); break;
+          case "ambiance": this.genres.push("Ambiance"); break;
+          case "café": this.genres.push("Café"); break;
+          case "asiatique": this.genres.push("Asiatique"); break;
+          case "bistro": this.genres.push("Bistro"); break;
+          case "italien": this.genres.push("Italien"); break;
+        }})
+        if(this.genres.length === 0) this.genres.push("N/A");
+        if(restaurant.opening_hours.sunday === null) restaurant.opening_hours.sunday = "Closed";
+        if(restaurant.opening_hours.monday === null) restaurant.opening_hours.monday = "Closed";
+        if(restaurant.opening_hours.tuesday === null) restaurant.opening_hours.tuesday = "Closed";
+        if(restaurant.opening_hours.wednesday === null) restaurant.opening_hours.wednesday = "Closed";
+        if(restaurant.opening_hours.thursday === null) restaurant.opening_hours.thursday = "Closed";
+        if(restaurant.opening_hours.friday === null) restaurant.opening_hours.friday = "Closed";
+        if(restaurant.opening_hours.saturday === null) restaurant.opening_hours.saturday = "Closed";
         this.routeColor = "black";
         this.route = "";
       } else {
