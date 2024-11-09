@@ -34,21 +34,33 @@
             :key="restaurant.id"
         >
           <router-link :to="'/restaurant/' + restaurant.id"
-          @click.prevent="navigateToRestaurant(restaurant)">
+                       @click.prevent="navigateToRestaurant(restaurant)">
             <strong>{{ restaurant.name }}</strong> -
             {{ restaurant.genres.join(', ') }} -
             {{ '$'.repeat(restaurant.price_range) }} -
             {{ restaurant.rating }}
           </router-link>
+          <button @click="ouvrirModalVisite(restaurant)" class="btn btn-sm btn-primary ml-3">
+            Marquer comme visité
+          </button>
         </li>
       </ul>
+
+      <!-- Visit Modal -->
+      <ModalVisite
+          v-if="showModalVisite"
+          :restaurantId="selectedRestaurantId"
+          :nomRestaurant="selectedRestaurantName"
+          @fermer="fermerModalVisite"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import restaurants from "../data/restaurant_list.json";
-import { auth} from '../../firebaseConfig';
+import { auth } from '../../firebaseConfig';
+import ModalVisite from '@/components/ModalVisite.vue';
 
 export default {
   name: "HomePageComponent",
@@ -57,7 +69,10 @@ export default {
       searchQuery: '',
       selectedType: '',
       selectedPriceRange: '',
-      restaurants: restaurants || {restaurants: []}
+      restaurants: restaurants || {restaurants: []},
+      showModalVisite: false,
+      selectedRestaurantId: null,
+      selectedRestaurantName: '',
     };
   },
   computed: {
@@ -93,23 +108,34 @@ export default {
       if (user) {
         const userKey = `visitCount-${user.uid}-${restaurant.id}`;
         const timestampKey = `visitTimestamp-${user.uid}-${restaurant.id}`;
-        // Retrieve the visit count 
+        // Retrieve the visit count
         let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
-        
+
         // Increment the visit count
         visitCount += 1;
-        
+
         // Save the visit count of the user
         localStorage.setItem(userKey, visitCount);
-        
+
         localStorage.setItem(timestampKey, Date.now());//check the time of the visit
-        
+
         this.$router.push(`/restaurant/${restaurant.id}`);
-        
+
         // Clear the search query
         this.searchQuery = '';
-      } 
+      }
+    },
+    ouvrirModalVisite(restaurant) {
+      this.selectedRestaurantId = restaurant.id;
+      this.selectedRestaurantName = restaurant.name;
+      this.showModalVisite = true;
+    },
+    fermerModalVisite() {
+      this.showModalVisite = false;
     }
+  },
+  components: {
+    ModalVisite
   }
 };
 </script>
