@@ -41,7 +41,7 @@
       <div class="d-flex justify-content-between">
         <button @click="getDirections(restaurant)" class="w-25">Directions</button>
         <button @click="null" class="w-25">Favorite</button>
-        <button @click="null" class="w-25">Visited</button>
+        <button @click="addFavorite(restaurant)" class="w-25">Visited</button>
       </div>
       <p v-bind:style="{color: routeColor}">{{route}}</p>
     </div>
@@ -50,6 +50,7 @@
 
 <script>
 //import restaurants from '../data/restaurant_list.json';
+//import {getRestaurantById} from '../api/restaurant.js'
 import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 
@@ -197,6 +198,9 @@ export default {
         });
       }
       navigator.geolocation.getCurrentPosition(success);
+    },
+    addFavorite(restaurant){
+      restaurant.id;
     }
   }
 };
