@@ -38,10 +38,17 @@
           </l-marker>
         </l-map>
       </div>
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between my-3">
         <button @click="getDirections(restaurant)" class="w-25">Directions</button>
-        <button @click="null" class="w-25">Favorite</button>
-        <button @click="addFavorite(restaurant)" class="w-25">Visited</button>
+        <button v-if="this.user" @click="addFavorite()" class="w-25">Favorite</button>
+        <button v-if="this.user" @click="modalVisite()" class="w-25">Visited</button>
+      </div>
+      <div  v-if="this.user" class="row text-center align-content-center justify-content-center">
+        <div class="col">
+          <select class="form-select ml-2 w-25 justify-content-center mx-auto my-2" v-model="selectedFavorite">
+            <option v-for="favorite in favorites" :key="favorite"> "{{favorite.name}}</option>
+          </select>
+        </div>
       </div>
       <p v-bind:style="{color: routeColor}">{{route}}</p>
     </div>
@@ -51,6 +58,7 @@
 <script>
 //import restaurants from '../data/restaurant_list.json';
 //import {getRestaurantById} from '../api/restaurant.js'
+import {auth} from '../../firebaseConfig';
 import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 
@@ -60,21 +68,41 @@ export default {
   props: ['id'],
   data() {
     return {
-      restaurant: {},
+      restaurant: {
+        "opening_hours":{},
+        "pictures":[""],
+        "name":"",
+        "place_id":"",
+        "tel":"",
+        "address":"",
+        "price_range":0,
+        "rating": 0.0,
+        "genres":[""],
+        "location":{
+          "coordinates": [0, 0],
+          "type": "Point"
+        },
+        "id": ""
+      },
       genres: [],
       opening_hours: {},
+      user: "",
+      favorites: {},
+      selectedFavorite: "",
       zoom: 18,
       route: {},
-      routeColor: {},
+      routeColor: {}
     };
   },
   created() {
     this.fetchRestaurantDetails();
+    this.user = auth.currentUser;
+    if(this.user) this.fetchFavorites();
   },
   methods: {
     async fetchRestaurantDetails() {
-      let url = "https://ufoodapi.herokuapp.com/unsecure/restaurants/" + this.id;
-      const restaurant = await fetch(url).then(res => res.json())//restaurants.find(r => r.id === this.id);
+      let url = "https://ufoodapi.herokuapp.com/unsecure/restaurants/" + this.id; //TODO utiliser call API? Pas besoin d'être en mode connecté...
+      const restaurant = await fetch(url).then(res => res.json());//restaurants.find(r => r.id === this.id);
       if (restaurant) {
         this.restaurant = restaurant;
         restaurant.genres.forEach((genre) => {switch (genre){
@@ -199,8 +227,21 @@ export default {
       }
       navigator.geolocation.getCurrentPosition(success);
     },
-    addFavorite(restaurant){
-      restaurant.id;
+    async fetchFavorites(){
+      let url = "https://ufoodapi.herokuapp.com/favorites";
+      const favorites = await fetch(url, {
+        method: 'GET' //TODO utiliser l'authentification + call API
+      }).then(res => res.json()).then(json => json.items);
+      if(favorites){
+        this.favorites = favorites;
+      }
+    },
+    async addFavorite(){
+      let url = "https://ufoodapi.herokuapp.com/favorites/" + this.selectedFavorite.id;
+      await fetch(url);//TODO modifier pour utiliser la fonction d'ajout à une liste existante
+    },
+    modalVisite(){
+      //TODO faire fonctionner modal visite (par @ilyes probablement, à voir)
     }
   }
 };
