@@ -51,6 +51,12 @@
         </div>
       </div>
       <p v-bind:style="{color: routeColor}">{{route}}</p>
+      <ModalVisite
+          v-if="showModalVisite"
+          :restaurantId="restaurant.id"
+          :nomRestaurant="restaurant.name"
+          @fermer="fermerModalVisite"
+      />
     </div>
   </div>
 </template>
@@ -61,6 +67,8 @@
 import {auth} from '../../firebaseConfig';
 import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
+import ModalVisite from '@/components/ModalVisite.vue';
+
 
 export default {
   name: 'RestaurantPage',
@@ -100,6 +108,7 @@ export default {
     if(this.user) this.fetchFavorites();
   },
   methods: {
+    
     async fetchRestaurantDetails() {
       let url = "https://ufoodapi.herokuapp.com/unsecure/restaurants/" + this.id; //TODO utiliser call API? Pas besoin d'être en mode connecté...
       const restaurant = await fetch(url).then(res => res.json());//restaurants.find(r => r.id === this.id);
@@ -228,7 +237,7 @@ export default {
       navigator.geolocation.getCurrentPosition(success);
     },
     async fetchFavorites(){
-      let url = "https://ufoodapi.herokuapp.com/favorites";
+      let url = "https://ufoodapi.herokuapp.com/unsecure/favorites";
       const favorites = await fetch(url, {
         method: 'GET' //TODO utiliser l'authentification + call API
       }).then(res => res.json()).then(json => json.items);
@@ -236,12 +245,26 @@ export default {
         this.favorites = favorites;
       }
     },
+    fermerModalVisite() {
+      this.showModalVisite = false;
+    },
     async addFavorite(){
-      let url = "https://ufoodapi.herokuapp.com/favorites/" + this.selectedFavorite.id;
-      await fetch(url);//TODO modifier pour utiliser la fonction d'ajout à une liste existante
+      //TODO utiliser l'authentification + call API
+      let url = "https://ufoodapi.herokuapp.com/unsecure/favorites/" + this.selectedFavorite.id;
+      await fetch(url,{
+        method: 'PUT',
+        body: JSON.stringify({
+            name: this.selectedFavorite.name,
+            owner: this.user.email,
+        }),
+        
+      }).then(res => res.json()).then(json => json.items);
     },
     modalVisite(){
-      //TODO faire fonctionner modal visite (par @ilyes probablement, à voir)
+      this.showModalVisite = true;
+    },
+    components: {
+      ModalVisite
     }
   }
 };

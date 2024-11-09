@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import VisiteService from '@/api/visite'; // Assurez-vous que le chemin est correct
+import VisiteService from '@/api/Visite'; // Assurez-vous que le chemin est correct
 const utilisateurId = '6569767db55a58e85c543213';
 
 export default {
