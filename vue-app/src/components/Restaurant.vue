@@ -108,7 +108,7 @@ export default {
     if(this.user) this.fetchFavorites();
   },
   methods: {
-    
+
     async fetchRestaurantDetails() {
       let url = "https://ufoodapi.herokuapp.com/unsecure/restaurants/" + this.id; //TODO utiliser call API? Pas besoin d'être en mode connecté...
       const restaurant = await fetch(url).then(res => res.json());//restaurants.find(r => r.id === this.id);
@@ -257,7 +257,7 @@ export default {
             name: this.selectedFavorite.name,
             owner: this.user.email,
         }),
-        
+
       }).then(res => res.json()).then(json => json.items);
     },
     modalVisite(){

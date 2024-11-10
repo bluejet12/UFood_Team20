@@ -1,6 +1,5 @@
 <template>
   <div class="home-page d-flex mt-5">
-    <!-- Search and Filter Section -->
     <div class="container">
       <div class="input-group mb-3">
         <input
@@ -46,12 +45,17 @@
         </li>
       </ul>
 
+      <!-- Message de succès -->
+      <p v-if="messageDeSucces" class="alert alert-success mt-3">{{ messageDeSucces }}</p>
+
       <!-- Visit Modal -->
       <ModalVisite
           v-if="showModalVisite"
           :restaurantId="selectedRestaurantId"
           :nomRestaurant="selectedRestaurantName"
+          :userId="userId"
           @fermer="fermerModalVisite"
+          @visite-ajoutee="afficherMessageSucces"
       />
     </div>
   </div>
@@ -59,8 +63,8 @@
 
 <script>
 import restaurants from "../data/restaurant_list.json";
-import { auth } from '../../firebaseConfig';
 import ModalVisite from '@/components/ModalVisite.vue';
+import auth from "@/api/auth";
 
 export default {
   name: "HomePageComponent",
@@ -73,7 +77,12 @@ export default {
       showModalVisite: false,
       selectedRestaurantId: null,
       selectedRestaurantName: '',
+      messageDeSucces: '', // Pour stocker le message de succès
+      userId: null,
     };
+  },
+  created() {
+    this.fetchUserId();
   },
   computed: {
     filteredRestaurants() {
@@ -100,17 +109,10 @@ export default {
       return filtered;
     }
   },
-  methods: {
-    async navigateToRestaurant(restaurant) {
-      const user = auth.currentUser;
 
-      //Check if user is logged in
-      if (user) {
-        this.$router.push(`/restaurant/${restaurant.id}`);
-
-        // Clear the search query
-        this.searchQuery = '';
-      }
+  methods:  {
+    async fetchUserId() {
+      this.userId = auth.getUserId();
     },
     ouvrirModalVisite(restaurant) {
       this.selectedRestaurantId = restaurant.id;
@@ -119,6 +121,14 @@ export default {
     },
     fermerModalVisite() {
       this.showModalVisite = false;
+    },
+    afficherMessageSucces(message) {
+      console.log("Message de succès reçu :", message); // Ajout du log
+      this.messageDeSucces = message; // Mettre à jour le message de succès
+      this.fermerModalVisite(); // Fermer la modale
+      setTimeout(() => {
+        this.messageDeSucces = ''; // Effacer le message après 3 secondes
+      }, 3000);
     }
   },
   components: {
@@ -135,5 +145,11 @@ export default {
 
 .container {
   max-width: 400px;
+}
+
+.alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
 }
 </style>
