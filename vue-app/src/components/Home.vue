@@ -13,9 +13,7 @@
         />
         <select class="form-select ml-2" v-model="selectedType" @change="filterRestaurants">
           <option value="">All</option>
-          <option value="Fast Food">Fast Food</option>
-          <option value="Vegan">Vegan</option>
-          <option value="Coffee">Coffee</option>
+          <option v-for="genre in genreOptions" :key="genre" :value="genre">{{ genre }}</option>
         </select>
         <select class="form-select ml-2" v-model="selectedPriceRange" @change="filterRestaurants" style="width: 50px;">
           <option value="">All Prices</option>
@@ -36,9 +34,9 @@
           <router-link :to="'/restaurant/' + restaurant.id"
                        @click.prevent="navigateToRestaurant(restaurant)">
             <strong>{{ restaurant.name }}</strong> -
-            {{ restaurant.genres.join(', ') }} -
+            {{ restaurant.genres && restaurant.genres.length ? restaurant.genres.join(', ') : 'No genres available' }} -
             {{ '$'.repeat(restaurant.price_range) }} -
-            {{ restaurant.rating }}
+            {{ restaurant.rating.toFixed(1) }}
           </router-link>
           <button @click="ouvrirModalVisite(restaurant)" class="btn btn-sm btn-primary ml-3">
             Marquer comme visité
@@ -48,7 +46,7 @@
 
       <!-- Visit Modal -->
       <ModalVisite
-          v-if="showModalVisite"
+          v-if="showModalVisite && selectedRestaurantId"
           :restaurantId="selectedRestaurantId"
           :nomRestaurant="selectedRestaurantName"
           @fermer="fermerModalVisite"
@@ -58,9 +56,10 @@
 </template>
 
 <script>
-import restaurants from "../data/restaurant_list.json";
+//import restaurants from "../data/restaurant_list.json";
 import { auth } from '../../firebaseConfig';
 import ModalVisite from '@/components/ModalVisite.vue';
+import { getRestaurants } from '@/api/restaurant';
 
 export default {
   name: "HomePageComponent",
@@ -69,34 +68,86 @@ export default {
       searchQuery: '',
       selectedType: '',
       selectedPriceRange: '',
-      restaurants: restaurants || {restaurants: []},
+      restaurants: [{
+        "opening_hours":{},
+        "pictures":[""],
+        "name":"",
+        "place_id":"",
+        "tel":"",
+        "address":"",
+        "price_range":0,
+        "rating": 0.0,
+        "genres":[""],
+        "location":{
+          "coordinates": [0, 0],
+          "type": "Point"
+        },
+        "id": ""
+      },],
       showModalVisite: false,
       selectedRestaurantId: null,
       selectedRestaurantName: '',
     };
   },
   computed: {
+    genreOptions() {
+      const genreSet = new Set();
+
+      // Extract genres from restaurants and map to user-friendly names
+      this.restaurants.forEach((restaurant) => {
+        restaurant.genres.forEach((genre) => {
+          switch (genre) {
+            case "fast-food":
+              genreSet.add("Fast Food");
+              break;
+            case "libanais":
+              genreSet.add("Libanais");
+              break;
+            case "hamburgers":
+              genreSet.add("Hamburgers");
+              break;
+            case "ambiance":
+              genreSet.add("Ambiance");
+              break;
+            case "café":
+              genreSet.add("Café");
+              break;
+            case "asiatique":
+              genreSet.add("Asiatique");
+              break;
+            case "bistro":
+              genreSet.add("Bistro");
+              break;
+            case "italien":
+              genreSet.add("Italien");
+              break;
+          }
+        });
+      });
+
+      // Convert Set to Array for the template
+      return Array.from(genreSet);
+    },
     filteredRestaurants() {
       let filtered = this.restaurants;
-
+      
       if (this.selectedType) {
         filtered = filtered.filter(restaurant =>
-            restaurant.genres.includes(this.selectedType)
+          restaurant.genres.some(genre => genre.toLowerCase() === this.selectedType.toLowerCase())
         );
       }
-
+     
       if (this.searchQuery) {
         filtered = filtered.filter(restaurant =>
-            restaurant.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+          restaurant.name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
 
       if (this.selectedPriceRange) {
         filtered = filtered.filter(restaurant =>
-            restaurant.price_range == this.selectedPriceRange
+          restaurant.price_range == this.selectedPriceRange
         );
       }
-
       return filtered;
     }
   },
@@ -104,11 +155,8 @@ export default {
     async navigateToRestaurant(restaurant) {
       const user = auth.currentUser;
 
-      //Check if user is logged in
       if (user) {
         this.$router.push(`/restaurant/${restaurant.id}`);
-
-        // Clear the search query
         this.searchQuery = '';
       }
     },
@@ -119,10 +167,21 @@ export default {
     },
     fermerModalVisite() {
       this.showModalVisite = false;
+    },
+    async fetchRestaurants() {
+      try {
+        const response = await getRestaurants();
+        this.restaurants = response || [];
+      } catch (error) {
+        console.error("Error fetching restaurants:", error);
+      }
     }
   },
   components: {
     ModalVisite
+  },
+  mounted() {
+    this.fetchRestaurants();
   }
 };
 </script>
@@ -134,6 +193,6 @@ export default {
 }
 
 .container {
-  max-width: 400px;
+  max-width: 600px;
 }
 </style>

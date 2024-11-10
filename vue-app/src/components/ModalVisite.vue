@@ -42,19 +42,23 @@ export default {
 
   data() {
     return {
-      date: '',
-      note: '',
+      date: this.currentDate(),
+      note: 1,
       commentaire: ''
     };
   },
 
   methods: {
+    currentDate() {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
+    },
     async envoyerVisite() {
       try {
-
         await VisiteService.ajouterVisite(utilisateurId, this.restaurantId, this.date, this.note, this.commentaire);
         console.log('Visite envoyée avec succès !');
-        this.$emit('fermer'); // Ferme la modale après l'envoi
+        
+        this.$emit('fermer'); 
       } catch (error) {
         console.error('Erreur lors de l\'envoi de la visite :', error);
       }

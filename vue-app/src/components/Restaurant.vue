@@ -17,8 +17,8 @@
         Longitude {{ restaurant.location.coordinates[0] }}</p>
       <div v-if="restaurant.pictures && restaurant.pictures.length">
         <h3>Pictures</h3>
-        <ul style="list-style-type: none;">
-          <li v-for="(picture, index) in restaurant.pictures" :key="index">
+        <ul class="pictures-list" >
+          <li  v-for="(picture, index) in restaurant.pictures" :key="index">
             <img :src="picture" :alt="'Picture ' + (index + 1)" />
           </li>
         </ul>
@@ -41,12 +41,12 @@
       <div class="d-flex justify-content-between my-3">
         <button @click="getDirections(restaurant)" class="w-25">Directions</button>
         <button v-if="this.user" @click="addFavorite()" class="w-25">Favorite</button>
-        <button v-if="this.user" @click="modalVisite()" class="w-25">Visited</button>
+        <button v-if="this.user" @click="openModalVisite()" class="w-25">Visited</button>
       </div>
       <div  v-if="this.user" class="row text-center align-content-center justify-content-center">
         <div class="col">
           <select class="form-select ml-2 w-25 justify-content-center mx-auto my-2" v-model="selectedFavorite">
-            <option v-for="favorite in favorites" :key="favorite"> "{{favorite.name}}</option>
+            <option v-for="favorite in favorites" :key="favorite.id" :value="favorite">{{ favorite.name }}</option>
           </select>
         </div>
       </div>
@@ -55,7 +55,7 @@
           v-if="showModalVisite"
           :restaurantId="restaurant.id"
           :nomRestaurant="restaurant.name"
-          @fermer="fermerModalVisite"
+          @fermer="closeModalVisite"
       />
     </div>
   </div>
@@ -63,16 +63,17 @@
 
 <script>
 //import restaurants from '../data/restaurant_list.json';
-//import {getRestaurantById} from '../api/restaurant.js'
+import {getRestaurantById} from '../api/restaurant.js'
 import {auth} from '../../firebaseConfig';
 import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 import ModalVisite from '@/components/ModalVisite.vue';
+import api from '../api/favorites.js';
 
 
 export default {
   name: 'RestaurantPage',
-  components: {LPopup, LMarker, LMap, LTileLayer},
+  components: {LPopup, LMarker, LMap, LTileLayer, ModalVisite},
   props: ['id'],
   data() {
     return {
@@ -99,7 +100,8 @@ export default {
       selectedFavorite: "",
       zoom: 18,
       route: {},
-      routeColor: {}
+      routeColor: {},
+      showModalVisite: false
     };
   },
   created() {
@@ -110,8 +112,7 @@ export default {
   methods: {
     
     async fetchRestaurantDetails() {
-      let url = "https://ufoodapi.herokuapp.com/unsecure/restaurants/" + this.id; //TODO utiliser call API? Pas besoin d'être en mode connecté...
-      const restaurant = await fetch(url).then(res => res.json());//restaurants.find(r => r.id === this.id);
+      const restaurant = await getRestaurantById(this.id);
       if (restaurant) {
         this.restaurant = restaurant;
         restaurant.genres.forEach((genre) => {switch (genre){
@@ -237,42 +238,53 @@ export default {
       navigator.geolocation.getCurrentPosition(success);
     },
     async fetchFavorites(){
-      let url = "https://ufoodapi.herokuapp.com/unsecure/favorites";
-      const favorites = await fetch(url, {
-        method: 'GET' //TODO utiliser l'authentification + call API
-      }).then(res => res.json()).then(json => json.items);
+      
+      const response = await api.getFavorites();
+      const favorites = response.items;
+      
       if(favorites){
         this.favorites = favorites;
       }
     },
-    fermerModalVisite() {
-      this.showModalVisite = false;
-    },
     async addFavorite(){
-      //TODO utiliser l'authentification + call API
-      let url = "https://ufoodapi.herokuapp.com/unsecure/favorites/" + this.selectedFavorite.id;
-      await fetch(url,{
-        method: 'PUT',
-        body: JSON.stringify({
-            name: this.selectedFavorite.name,
-            owner: this.user.email,
-        }),
-        
-      }).then(res => res.json()).then(json => json.items);
+     
+      console.log("Selected Favorite",this.selectedFavorite);
+      const response = await api.putFavoriteById(this.selectedFavorite.id ,this.selectedFavorite.name, this.user.email);
+      console.log("PutfAVORITE RESPONSE",response);
     },
-    modalVisite(){
+    openModalVisite() {
       this.showModalVisite = true;
     },
-    components: {
-      ModalVisite
+    closeModalVisite() {
+      this.showModalVisite = false;
     }
   }
 };
 </script>
 
 <style scoped>
+.form-select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .restaurant-page {
   margin: 40px 0;
+}
+.pictures-list {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 10px; 
+  padding: 0;
+  list-style-type: none;
+}
+
+/* Style each picture */
+.pictures-list img {
+  max-width: 150px; 
+  height: auto; 
+  border-radius: 8px; 
+  object-fit: cover;
 }
 
 h1 {

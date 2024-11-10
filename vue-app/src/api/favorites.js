@@ -1,16 +1,16 @@
 //import { getAuthToken } from '../utils/auth';
 
-const ENDPOINT = 'https://ufoodapi.herokuapp.com';
+const ENDPOINT = 'https://ufoodapi.herokuapp.com/unsecure';
 
 
 const getFavorites = async function(limit, page) {
     const query = new URLSearchParams({
         limit: limit || 10,
-        page: page || 0
+        page: page || 1
     });
 
     try {
-        const response = await fetch(`${ENDPOINT}/unsecure/favorites?${query}`, {
+        const response = await fetch(`${ENDPOINT}/favorites?${query}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

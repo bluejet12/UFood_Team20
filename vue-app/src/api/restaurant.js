@@ -1,15 +1,16 @@
-import { getAuthToken } from '../utils/auth';
+//import { getAuthToken } from '../api/auth';
 
-const ENDPOINT = 'https://ufoodapi.herokuapp.com';
+const ENDPOINT = 'https://ufoodapi.herokuapp.com/unsecure';
 
-const getRestaurants = async function(limit, page)  {
-    const token = getAuthToken(); // get token with local storage
+export const getRestaurants = async function(limit, page)  {
+    //const token = getAuthToken(); // get token with local storage
+    /*
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
     }
-
+    */
     //TODO fix query
     const query = new URLSearchParams({
 
@@ -21,7 +22,7 @@ const getRestaurants = async function(limit, page)  {
         const response = await fetch(`${ENDPOINT}/restaurants?${query}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                //'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -31,25 +32,26 @@ const getRestaurants = async function(limit, page)  {
         }
 
         const data = await response.json();
-        return data.restaurants;
+        return data.items;
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
 };
 
-const getRestaurantById = async function(id){
-    const token = getAuthToken(); // get token with local storage
+export const getRestaurantById = async function(id){
+    //const token = getAuthToken(); // get token with local storage
+    /*
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
     }
-
+*/
     try {
         const response = await fetch(`${ENDPOINT}/restaurants/${id}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                //'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -59,19 +61,19 @@ const getRestaurantById = async function(id){
         }
 
         const data = await response.json();
-        return data.restaurants;
+        
+        return data;
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
 };
 const getRestaurantsVisitsById = async function(id){
-    const token = getAuthToken(); // get token with local storage
-    if (!token) {
+    //const token = getAuthToken(); // get token with local storage
+    /*if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
-    }
-
+    }*/
 
     //TODO fix query
     const query = new URLSearchParams({
@@ -83,7 +85,7 @@ const getRestaurantsVisitsById = async function(id){
         const response = await fetch(`${ENDPOINT}/restaurants/${id}/visits${query}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+            //    'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -93,7 +95,7 @@ const getRestaurantsVisitsById = async function(id){
         }
 
         const data = await response.json();
-        return data.visits;
+        return data;
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
@@ -102,7 +104,6 @@ const getRestaurantsVisitsById = async function(id){
 
 
 export default {
-    getRestaurants,
     getRestaurantById,
     getRestaurantsVisitsById
 };

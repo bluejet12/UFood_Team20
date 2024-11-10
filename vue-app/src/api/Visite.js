@@ -44,3 +44,4 @@ export const VisiteService = {
         }
     }
 };
+export default VisiteService;

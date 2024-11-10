@@ -1,15 +1,16 @@
-import { getAuthToken } from '../utils/auth';
-const ENDPOINT = 'https://ufoodapi.herokuapp.com';
+//import { getAuthToken } from '../utils/auth';
+const ENDPOINT = 'https://ufoodapi.herokuapp.com/unsecure';
 
 
 const getListUser =  async function(limit, pages, search) {
 
-    const token = getAuthToken(); // get token with local storage
+    //const token = getAuthToken(); // get token with local storage
+    /*
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
-    }
+    }*/
 
     //TODO fix query
     const query = new URLSearchParams({
@@ -21,7 +22,7 @@ const getListUser =  async function(limit, pages, search) {
         const response = await fetch(`${ENDPOINT}/user?${query}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+       //         'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -40,13 +41,14 @@ const getListUser =  async function(limit, pages, search) {
 
 const getUserById = async function() {
     
-    const token = getAuthToken(); // get token with local storage
+    //const token = getAuthToken(); // get token with local storage
+    /*
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
     }
-
+*/
     const userId = localStorage.getItem('userId');
     if (!userId) {
         console.error('No user id found');
@@ -57,7 +59,7 @@ const getUserById = async function() {
         const response = await fetch(`${ENDPOINT}/user/:${userId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+  //              'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -75,13 +77,14 @@ const getUserById = async function() {
 };
 
 const getUserFavorites = async function(limit, pages) {
+    /*
     const token = getAuthToken(); // get token with local storage
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
     }
-
+*/
     const userId = localStorage.getItem('userId');
     if (!userId) {
         console.error('No user id found');
@@ -99,7 +102,7 @@ const getUserFavorites = async function(limit, pages) {
         const response = await fetch(`${ENDPOINT}/user/:${userId}/favorites?${query}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+  //              'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -116,17 +119,19 @@ const getUserFavorites = async function(limit, pages) {
 };
 
 const postFollowUser = async function(id) {
+    /*
     const token = getAuthToken(); // get token with local storage
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
     }
+    */
     await fetch(`${ENDPOINT}/user/:${id}/follow`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+    //        'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
             id: id,
@@ -142,17 +147,19 @@ const postFollowUser = async function(id) {
 
 
 const postUnfollowUser = async function(id) {
-    const token = getAuthToken(); // get token with local storage
+    //const token = getAuthToken(); // get token with local storage
+    /*
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
     }
+        */
     await fetch(`${ENDPOINT}/user/:${id}/unfollow`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            //'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
             id: id,
