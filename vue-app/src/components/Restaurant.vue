@@ -110,7 +110,7 @@ export default {
     if(this.user) this.fetchFavorites();
   },
   methods: {
-    
+
     async fetchRestaurantDetails() {
       const restaurant = await getRestaurantById(this.id);
       if (restaurant) {

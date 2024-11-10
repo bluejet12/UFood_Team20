@@ -25,21 +25,14 @@
 </template>
 
 <script>
-import VisiteService from '@/api/Visite';
-const utilisateurId = '6569767db55a58e85c543213';
+import { VisiteService } from '@/api/Visite';
 
 export default {
   props: {
-    restaurantId: {
-      type: String,
-      required: true
-    },
-    nomRestaurant: {
-      type: String,
-      required: true
-    }
+    restaurantId: String,
+    nomRestaurant: String,
+    userId: String, // Prop pour l'ID utilisateur
   },
-
   data() {
     return {
       date: this.currentDate(),
@@ -47,7 +40,6 @@ export default {
       commentaire: ''
     };
   },
-
   methods: {
     currentDate() {
       const today = new Date();
@@ -55,17 +47,20 @@ export default {
     },
     async envoyerVisite() {
       try {
-        await VisiteService.ajouterVisite(utilisateurId, this.restaurantId, this.date, this.note, this.commentaire);
-        console.log('Visite envoyée avec succès !');
-        
-        this.$emit('fermer'); 
+        await VisiteService.ajouterVisite(this.userId, this.restaurantId, this.date, this.note, this.commentaire);
+        this.$emit('visite-ajoutee', 'Votre visite a été enregistrée avec succès !'); // Émettre l’événement de succès
+        this.date = '';
+        this.note = '';
+        this.commentaire = '';
       } catch (error) {
-        console.error('Erreur lors de l\'envoi de la visite :', error);
+        console.error("Erreur lors de l'ajout de la visite :", error);
       }
-    }
-  }
+    },
+  },
 };
 </script>
+
+
 
 <style scoped>
 .modal-visite {
@@ -87,9 +82,5 @@ export default {
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
-}
-
-.form-label {
-  color: black;
 }
 </style>
