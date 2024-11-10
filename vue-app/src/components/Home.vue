@@ -63,7 +63,7 @@
 //import restaurants from "../data/restaurant_list.json";
 import { auth } from '../../firebaseConfig';
 import ModalVisite from '@/components/ModalVisite.vue';
-import { getRestaurants } from '@/api/restaurant';
+import restaurantApi from '@/api/restaurant';
 
 export default {
   name: "HomePageComponent",
@@ -175,8 +175,8 @@ export default {
     },
     async fetchRestaurants() {
       try {
-        const response = await getRestaurants();
-        this.restaurants = response || [];
+        const response = await restaurantApi.getRestaurants();
+        this.restaurants = response.items || [];
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       }

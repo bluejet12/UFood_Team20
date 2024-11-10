@@ -40,7 +40,7 @@ const getFavoriteById = async function(id){
     }*/
 
 try {
-    const response = await fetch(`${ENDPOINT}/unsecure/favorites/${id}`, {
+    const response = await fetch(`${ENDPOINT}/favorites/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ const postFavorite = async function(name, owner) {
     });
 
     try {
-        const response = await fetch(`${ENDPOINT}/unsecure/favorites`, {
+        const response = await fetch(`${ENDPOINT}/favorites`, {
             method: 'POST',
             headers: headers,
             body: body,
@@ -107,7 +107,7 @@ const postFavorite = async function(name, owner) {
 
 const putFavoriteById = async function(id, name, owner) {
     try {
-        const response = await fetch(`${ENDPOINT}/unsecure/favorites/${id}`, {
+        const response = await fetch(`${ENDPOINT}/favorites/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ const deleteFavoriteById = async function(id) {
     */
 
     try {
-        const response = await fetch(`${ENDPOINT}/unsecure/favorites/${id}`, {
+        const response = await fetch(`${ENDPOINT}/favorites/${id}`, {
             method: 'DELETE',
             headers: headers,
         });
@@ -175,7 +175,7 @@ const deleteFavoriteById = async function(id) {
 const deleteFavoriteRestaurant = async function(id, restaurantId) {
     try {
         // Assuming the ENDPOINT variable is already defined
-        const response = await fetch(`${ENDPOINT}/unsecure/favorites/${id}/restaurants/${restaurantId}`, {
+        const response = await fetch(`${ENDPOINT}/favorites/${id}/restaurants/${restaurantId}`, {
             method: 'DELETE', // Change method to DELETE for removal
             headers: {
                 'Content-Type': 'application/json',
@@ -208,7 +208,7 @@ const postFavoriteRestaurant = async function(id, restaurantId) {
     }*/
 
     try {
-        const response = await fetch(`${ENDPOINT}/unsecure/favorites/${id}/restaurants`, {  // Fixed URL and used template literals
+        const response = await fetch(`${ENDPOINT}/favorites/${id}/restaurants`, {  // Fixed URL and used template literals
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
