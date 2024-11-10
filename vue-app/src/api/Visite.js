@@ -54,7 +54,7 @@ export const VisiteService = {
             const data = await response.json();
 
             // Directly return the data object, which contains the restaurant name
-            return data;  // Return the full response object
+            return data.items;  // Return the full response object
         } catch (error) {
             console.error('Error fetching restaurants:', error);
         }

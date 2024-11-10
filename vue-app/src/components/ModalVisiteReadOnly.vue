@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import VisiteService from '@/api/Visite'; // Assurez-vous que le chemin est correct
+import {VisiteService} from "@/api/Visite";
 const utilisateurId = '6569767db55a58e85c543213';
 
 export default {
@@ -54,13 +54,17 @@ export default {
   methods: {
     async chargerDetailsVisite() {
       try {
-        // Récupération des visites pour l'utilisateur et filtrage par restaurantId
         const visites = await VisiteService.obtenirVisites(utilisateurId);
         const visite = visites.find(v => v.restaurant_id === this.restaurantId);
 
         if (visite) {
+          const formattedDate = new Date(visite.date).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          });
           this.visiteDetails = {
-            date: visite.date,
+            date: formattedDate,
             rating: visite.rating,
             comment: visite.comment
           };

@@ -31,26 +31,29 @@
                   </div>
 
                   <!-- Display Recently Viewed Restaurants -->
-                  <h5 class="text-left w-100 mt-3 mb-2 text-muted">Recently Viewed Restaurants</h5>
-                  <ul v-if="recentlyViewed.length > 0" class="list-group w-100 shadow-sm">
-                    <li v-for="restaurant in recentlyViewed" :key="restaurant.id" class="list-group-item d-flex justify-content-between align-items-center">
-                      <!-- Display Restaurant Name -->
-                      <span class="text-dark">{{ selectedListRestaurantsName[restaurant.id] || 'Loading name...' }}</span>
+                  <h5 class="text-left w-100 mt-3 mb-2 text-muted">Recently Visited Restaurants</h5>
+                  <ul v-if="recentRestaurants.length > 0" class="list-group w-100 shadow-sm">
+                      <li 
+                        v-for="restaurant in recentRestaurants" 
+                        :key="restaurant.id" 
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                        @click="openModal(restaurant)"
+                      >
+                        <!-- Display Restaurant Name -->
+                        <span class="text-dark">{{ restaurant.name || 'Loading name...' }}</span>
 
-                      <!-- Display Visit Count -->
-                      <span class="badge badge-primary badge-pill">{{ restaurant.visitCount }} visits</span>
+                        <!-- Display Visit Count -->
+                        <span class="badge badge-primary badge-pill">{{ restaurant.visitCount }} visits</span>
+                      </li>
+                    </ul>
 
-                    </li>
-                  </ul>
-
-                  <!-- If no recently viewed restaurants, show this message -->
-                  <div v-else class="text-center mt-4">
-                    <p class="text-muted">No recently viewed restaurants yet.</p>
-                    <a href="#" @click.prevent="navigateToHome" class="btn btn-outline-dark btn-sm">
-                      Explore Restaurants
-                    </a>
-                  </div>
-
+                    <!-- If no recently viewed restaurants, show this message -->
+                    <div v-else class="text-center mt-4">
+                      <p class="text-muted">No recently viewed restaurants yet.</p>
+                      <a href="#" @click.prevent="navigateToHome" class="btn btn-outline-dark btn-sm">
+                        Explore Restaurants
+                      </a>
+                    </div>
 
                   <!-- Display Favorite Lists -->
                   <h5 class="text-left w-100 mt-4 mb-2 text-muted">Your Favorite Lists</h5>
@@ -156,6 +159,13 @@
                         @update:show="showRestaurantListModal = $event"
                         @add-restaurants="addRestaurantToFavoriteList"
                     />
+                    <!-- Visite ReadOnly Modal Component -->
+                    <ModalVisiteReadOnly 
+                      v-if="showModal" 
+                      :restaurantId="selectedRestaurant.id" 
+                      :nomRestaurant="selectedRestaurant.name"
+                      @fermer="closeModal"
+                    />
 
                     <!-- Display Restaurants in the List -->
                     <ul class="list-group w-100 shadow-sm">
@@ -199,16 +209,16 @@
 <script>
 import { auth } from '../../firebaseConfig'; // Adjust the path as needed
 import { onAuthStateChanged } from 'firebase/auth';
-//import restaurants from "../data/restaurant_list.json";
 import favorites from "../api/favorites";
 import restaurant from "@/api/restaurant";
 import RestaurantModal from "@/components/RestaurantModal.vue";
 import {VisiteService} from "@/api/Visite";
+import ModalVisiteReadOnly from './ModalVisiteReadOnly.vue';
 
 
 export default {
   name: 'ProfilePage',
-  components: {RestaurantModal},
+  components: {RestaurantModal,ModalVisiteReadOnly},
   data() {
     return {
       user: null,
@@ -228,6 +238,8 @@ export default {
       editedListName: '', // Temporarily holds the edited list name
       recentlyViewed: [],
       recentlyViewedName: [],
+      showModal: false,
+      selectedRestaurant: {}
     };
   },
   created() {
@@ -262,24 +274,34 @@ export default {
     async fetchRecentRestaurants() {
       const user = auth.currentUser;
       if (user) {
+        const visites = await VisiteService.obtenirVisites(user.uid);
+        
+        
         const localRestaurants = [];
-        const keys = Object.keys(localStorage);
+       
+        const restaurantPromises = visites.map(async (visite) => {
+          if (visite.restaurant_id) {
+            const restaurantId = visite.restaurant_id;
+            const visitCount = visites.filter(v => v.restaurant_id === restaurantId).length;
+            const visitTimestamp = visite.date;
 
-        keys.forEach(key => {
-          if (key.startsWith(`visitCount-${user.uid}-`)) {
-            const restaurantId = key.split('-')[2]; // Extract restaurant ID from key
-            const visitCount = parseInt(localStorage.getItem(key));
-            const visitTimestamp = parseInt(localStorage.getItem(`visitTimestamp-${user.uid}-${restaurantId}`)) || 0;
+            // Await restaurant name retrieval
+            const restaurantData = await restaurant.getRestaurantById(restaurantId);
 
-            // Get restaurant name by fetch Id
-            const restaurantName = this.getRestaurantNameById(restaurantId);
-
-            if (restaurantName) {
-              localRestaurants.push({id: restaurantId, name: restaurantName, visitCount, visitTimestamp});
+            if (restaurantData && restaurantData.name) {
+              localRestaurants.push({ 
+                id: restaurantId, 
+                name: restaurantData.name, 
+                visitCount, 
+                visitTimestamp 
+              });
             }
           }
         });
 
+        // Wait for all restaurantPromises to complete
+        await Promise.all(restaurantPromises);
+        console.log('Recent Restaurants ARRAY:', localRestaurants);
         //using the visitTimestamp to sort the restaurants : not the best way to do it :(
         localRestaurants.sort((a, b) => b.visitTimestamp - a.visitTimestamp);
 
@@ -287,8 +309,10 @@ export default {
         // Get the 5 most recent restaurants visitied by the user
         // We can adjust the number of restaurants to display as needed
         this.recentRestaurants = localRestaurants.slice(0, 5);
+        //console.log('Recent Restaurants Response:', this.recentRestaurants);
 
         this.fetchUserScore(localRestaurants);
+        
       } else {
         this.recentRestaurants = [];
         this.userScore = 0;
@@ -354,6 +378,7 @@ export default {
           this.selectedListRestaurants.forEach(restaurant => {
             this.getRestaurantNameById(restaurant.id);
           });
+
         } else {
           this.selectedListRestaurants = [];
         }
@@ -365,7 +390,7 @@ export default {
     async fetchvisitedRestaurant() {
       try {
         const response = await VisiteService.obtenirVisites('61916127f8f8790004fd287e');
-
+        
         if (response && response.items) {
           this.recentlyViewed = response.items;
           this.recentlyViewed.forEach(items => {
@@ -382,7 +407,7 @@ export default {
     async getRestaurantNameById(restaurantId) {
       try {
         const response = await restaurant.getRestaurantById(restaurantId);  // Call the API with the restaurantId
-        console.log('Restaurant Name Response:', response);  // Log the response
+        //console.log('Restaurant Name Response:', response);  // Log the response
 
         if (response && response.name) {
           this.selectedListRestaurantsName[restaurantId] = response.name;  // Store the restaurant name by restaurantId
@@ -397,6 +422,7 @@ export default {
     async getRecentlyRestaurantNameById(restaurantId) {
       try {
         const response = await restaurant.getRestaurantById(restaurantId);  // Call the API with the restaurantId
+       // console.log('Restaurant Name Response:', response);  // Log the response
 
         if (response && response.name) {
           this.recentlyViewedName[restaurantId] = response.name;  // Store the restaurant name by restaurantId
@@ -483,6 +509,14 @@ export default {
         console.error('Error saving list name:', error);
       }
     },
+    openModal(restaurant) {
+      this.selectedRestaurant = restaurant;
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
+      this.selectedRestaurant = {};
+    }
   },
   computed: {
     // Dynamically filter based on the radio button value ('user' or 'all')
