@@ -83,7 +83,7 @@
 <script>
 import { auth } from '../../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { getRestaurants } from '@/api/restaurant'; // Importing the API function
+import restaurant  from '@/api/restaurant'; // Importing the API function
 
 export default {
   name: 'NavigationBar',
@@ -123,8 +123,8 @@ export default {
     },
     async loadRestaurants() {
       try {
-        const response = await getRestaurants();  // Fetch the restaurant data
-        this.restaurants = response || [];  // Assuming response.data contains the restaurant array
+        const response = await restaurant.getRestaurants();  // Fetch the restaurant data
+        this.restaurants = response.items || [];  // Assuming response.data contains the restaurant array
       } catch (error) {
         console.error('Error loading restaurants:', error);
       }

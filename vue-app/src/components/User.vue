@@ -382,6 +382,7 @@ export default {
     async getRestaurantNameById(restaurantId) {
       try {
         const response = await restaurant.getRestaurantById(restaurantId);  // Call the API with the restaurantId
+        console.log('Restaurant Name Response:', response);  // Log the response
 
         if (response && response.name) {
           this.selectedListRestaurantsName[restaurantId] = response.name;  // Store the restaurant name by restaurantId
@@ -483,14 +484,6 @@ export default {
       }
     },
   },
-
-
-
-
-
-
-
-
   computed: {
     // Dynamically filter based on the radio button value ('user' or 'all')
     filteredFavoriteListsComputed() {

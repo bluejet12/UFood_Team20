@@ -63,12 +63,12 @@
 
 <script>
 //import restaurants from '../data/restaurant_list.json';
-import {getRestaurantById} from '../api/restaurant.js'
+import restaurantApi from '../api/restaurant.js'
 import {auth} from '../../firebaseConfig';
 import "leaflet/dist/leaflet.css";
 import {LMap, LMarker, LPopup, LTileLayer} from "@vue-leaflet/vue-leaflet";
 import ModalVisite from '@/components/ModalVisite.vue';
-import api from '../api/favorites.js';
+import favoriteApi from '../api/favorites.js';
 
 
 export default {
@@ -112,7 +112,7 @@ export default {
   methods: {
 
     async fetchRestaurantDetails() {
-      const restaurant = await getRestaurantById(this.id);
+      const restaurant = await restaurantApi.getRestaurantById(this.id);
       if (restaurant) {
         this.restaurant = restaurant;
         restaurant.genres.forEach((genre) => {switch (genre){
@@ -239,7 +239,7 @@ export default {
     },
     async fetchFavorites(){
       
-      const response = await api.getFavorites();
+      const response = await favoriteApi.getFavorites();
       const favorites = response.items;
       
       if(favorites){
@@ -249,7 +249,7 @@ export default {
     async addFavorite(){
      
       console.log("Selected Favorite",this.selectedFavorite);
-      const response = await api.putFavoriteById(this.selectedFavorite.id ,this.selectedFavorite.name, this.user.email);
+      const response = await favoriteApi.putFavoriteById(this.selectedFavorite.id ,this.selectedFavorite.name, this.user.email);
       console.log("PutfAVORITE RESPONSE",response);
     },
     openModalVisite() {
