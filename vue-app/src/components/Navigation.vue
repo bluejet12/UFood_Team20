@@ -58,8 +58,7 @@
               :src="user.photoURL || defaultAvatar"
               class="rounded-circle shadow-sm"
               alt="User Avatar"
-              style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #90CAF9;"
-            />
+              style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #90CAF9;"/>
             <span class="ml-2 text-dark font-weight-bold">{{ user.displayName || 'User' }}</span>
             <a
               class="nav-link dropdown-toggle d-flex align-items-center"
@@ -84,23 +83,22 @@
 <script>
 import { auth } from '../../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import restaurants from "../data/restaurant_list.json";
-
-
+import { getRestaurants } from '@/api/restaurant'; // Importing the API function
 
 export default {
   name: 'NavigationBar',
   data() {
     return {
       searchQuery: '',
-      restaurants: restaurants || { restaurants: [] },
-      filteredSuggestions: [], 
+      restaurants: [],  // Initially an empty array to be populated from API
+      filteredSuggestions: [],
       user: null,
       defaultAvatar: 'https://via.placeholder.com/150/000000/FFFFFF/?text=Avatar', // Fallback avatar
     };
   },
   created() {
     this.fetchUser();
+    this.loadRestaurants();  // Load restaurants on component creation
   },
   methods: {
     fetchUser() {
@@ -123,9 +121,17 @@ export default {
         console.error('Error logging out:', error);
       }
     },
+    async loadRestaurants() {
+      try {
+        const response = await getRestaurants();  // Fetch the restaurant data
+        this.restaurants = response || [];  // Assuming response.data contains the restaurant array
+      } catch (error) {
+        console.error('Error loading restaurants:', error);
+      }
+    },
     SearchRestaurants() {
       if (this.searchQuery.length > 0) {
-        // Filter restaurants based on input
+        // Filter the restaurants fetched from the API
         this.filteredSuggestions = this.restaurants.filter(restaurant =>
           restaurant.name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
@@ -134,36 +140,25 @@ export default {
       }
     },
     selectSuggestion(name) {
-
       this.searchQuery = name;
       this.filteredSuggestions = []; 
     },
-async navigateToRestaurant(restaurant) {
-  const user = auth.currentUser;
-  // Check if user is authenticated
-  if (user) {
-    const userKey = `visitCount-${user.uid}-${restaurant.id}`;
-    const timestampKey = `visitTimestamp-${user.uid}-${restaurant.id}`;
+    async navigateToRestaurant(restaurant) {
+      const user = auth.currentUser;
+      // Check if user is authenticated
+      if (user) {
 
-    //Use the localData to store the visit count
-    let visitCount = parseInt(localStorage.getItem(userKey)) || 0;
-    // Increment the visit count
-    visitCount += 1;
-    // Save the visit count of the user
-    localStorage.setItem(userKey, visitCount);
+        this.$router.push(`/restaurant/${restaurant.id}`);
 
-    localStorage.setItem(timestampKey, Date.now());//check the time of the visit
-
-    this.$router.push(`/restaurant/${restaurant.id}`);
-
-    // Clear the search query
-    this.searchQuery = '';
-    this.filteredSuggestions = [];
-  } 
-},
+        // Clear the search query
+        this.searchQuery = '';
+        this.filteredSuggestions = [];
+      } 
+    },
   },
 };
 </script>
+
 <style scoped>
 /* Small screen style only*/ 
 @media (max-width: 576px) {
