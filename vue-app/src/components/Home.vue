@@ -95,9 +95,6 @@ export default {
       userId: null,
     };
   },
-  created() {
-    this.fetchUserId();
-  },
   computed: {
     genreOptions() {
       const genreSet = new Set();
@@ -160,7 +157,9 @@ export default {
       return filtered;
     }
   },
-
+  methods: {
+    navigateToRestaurant(restaurant) {
+      const user = auth.currentUser;
       if (user) {
         this.$router.push(`/restaurant/${restaurant.id}`);
         this.searchQuery = '';

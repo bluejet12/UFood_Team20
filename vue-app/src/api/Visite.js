@@ -1,20 +1,18 @@
 import axios from 'axios';
 import auth from '@/api/auth'; // Assurez-vous que `getToken` est accessible.
-const token = auth.getToken();
-console.log("Token récupéré :", token);  // Vérification du token
 
 
-const BASE_URL = 'https://ufoodapi.herokuapp.com';
+const BASE_URL = 'https://ufoodapi.herokuapp.com/unsecure'; 
 
 export const VisiteService = {
     async ajouterVisite(userId, restaurantId, date, cote, commentaire) {
-        const token = auth.getToken(); // Utilisation de getToken pour récupérer le token
+        /*const token = auth.getToken(); // Utilisation de getToken pour récupérer le token
         if (!token) {
             console.error('No token found');
             console.warn('Please login');
             return;
         }
-
+        */
         try {
             const response = await axios.post(
                 `${BASE_URL}/users/${userId}/restaurants/visits`,
@@ -27,7 +25,7 @@ export const VisiteService = {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`, // Ajoute le token dans les headers
+                        //Authorization: `Bearer ${token}`, // Ajoute le token dans les headers
                     },
                 }
             );
@@ -63,6 +61,4 @@ export const VisiteService = {
         }
     },
 };
-export default VisiteService;
-
 export default VisiteService;

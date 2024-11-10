@@ -26,6 +26,7 @@
 
 <script>
 import { VisiteService } from '@/api/Visite';
+import { auth } from '../../firebaseConfig';
 
 export default {
   props: {
@@ -47,7 +48,8 @@ export default {
     },
     async envoyerVisite() {
       try {
-        await VisiteService.ajouterVisite(this.userId, this.restaurantId, this.date, this.note, this.commentaire);
+        const user = auth.currentUser;
+        await VisiteService.ajouterVisite(user.uid, this.restaurantId, this.date, this.note, this.commentaire);
         this.$emit('visite-ajoutee', 'Votre visite a été enregistrée avec succès !'); // Émettre l’événement de succès
         this.date = '';
         this.note = '';
