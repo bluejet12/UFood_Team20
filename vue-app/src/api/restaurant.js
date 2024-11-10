@@ -1,16 +1,15 @@
-//import { getAuthToken } from '../api/auth';
+//import { getAuthToken } from '../utils/auth';
 
-const ENDPOINT = 'https://ufoodapi.herokuapp.com/unsecure';
+const ENDPOINT = 'https://ufoodapi.herokuapp.com';
 
-export const getRestaurants = async function(limit, page)  {
-    //const token = getAuthToken(); // get token with local storage
-    /*
+const getRestaurants = async function(limit, page)  {
+    /*const token = getAuthToken(); // get token with local storage
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
-    }
-    */
+    }*/
+
     //TODO fix query
     const query = new URLSearchParams({
 
@@ -19,7 +18,7 @@ export const getRestaurants = async function(limit, page)  {
     });
 
     try {
-        const response = await fetch(`${ENDPOINT}/restaurants?${query}`, {
+        const response = await fetch(`${ENDPOINT}/unsecure/restaurants?${query}`, {
             method: 'GET',
             headers: {
                 //'Authorization': `Bearer ${token}`,
@@ -31,49 +30,46 @@ export const getRestaurants = async function(limit, page)  {
             throw new Error('Failed to fetch restaurants');
         }
 
+
         const data = await response.json();
-        return data.items;
+
+        // Directly return the data object, which contains the restaurant name
+        return data;  // Return the full response object
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
 };
 
-export const getRestaurantById = async function(id){
-    //const token = getAuthToken(); // get token with local storage
-    /*
+const getRestaurantById = async function(id) {
+    try {
+        const response = await fetch(`${ENDPOINT}/unsecure/restaurants/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch restaurants');
+        }
+
+        const data = await response.json();
+
+        // Directly return the data object, which contains the restaurant name
+        return data;  // Return the full response object
+    } catch (error) {
+        console.error('Error fetching restaurant:', error);
+    }
+};
+
+const getRestaurantsVisitsById = async function(id){
+    /*const token = getAuthToken(); // get token with local storage
     if (!token) {
         console.error('No token found');
         console.warn('Please login');
         return;
-    }
-*/
-    try {
-        const response = await fetch(`${ENDPOINT}/restaurants/${id}`, {
-            method: 'GET',
-            headers: {
-                //'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch restaurants');
-        }
-
-        const data = await response.json();
-        
-        return data;
-    } catch (error) {
-        console.error('Error fetching restaurants:', error);
-    }
-};
-const getRestaurantsVisitsById = async function(id){
-    //const token = getAuthToken(); // get token with local storage
-    /*if (!token) {
-        console.error('No token found');
-        console.warn('Please login');
-        return;
     }*/
+
 
     //TODO fix query
     const query = new URLSearchParams({
@@ -85,7 +81,7 @@ const getRestaurantsVisitsById = async function(id){
         const response = await fetch(`${ENDPOINT}/restaurants/${id}/visits${query}`, {
             method: 'GET',
             headers: {
-            //    'Authorization': `Bearer ${token}`,
+                //'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -95,7 +91,7 @@ const getRestaurantsVisitsById = async function(id){
         }
 
         const data = await response.json();
-        return data;
+        return data.visits;
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
@@ -104,6 +100,7 @@ const getRestaurantsVisitsById = async function(id){
 
 
 export default {
+    getRestaurants,
     getRestaurantById,
     getRestaurantsVisitsById
 };

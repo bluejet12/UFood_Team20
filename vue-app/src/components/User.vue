@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-5">
     <div class="row justify-content-center">
-      <div class="col-md-10 col-lg-8">
+      <div class="col-md-20 col-lg-20">
         <div class="card shadow-sm border-0 rounded-lg">
           <div class="row g-0">
             <!-- Profile Details Section -->
@@ -32,16 +32,18 @@
 
                   <!-- Display Recently Viewed Restaurants -->
                   <h5 class="text-left w-100 mt-3 mb-2 text-muted">Recently Viewed Restaurants</h5>
-                  <ul v-if="recentRestaurants.length > 0" class="list-group w-100 shadow-sm">
-                    <li
-                        v-for="restaurant in recentRestaurants"
-                        :key="restaurant.id"
-                        class="list-group-item d-flex justify-content-between align-items-center"
-                    >
-                      <span class="text-dark">{{ restaurant.name }}</span>
+                  <ul v-if="recentlyViewed.length > 0" class="list-group w-100 shadow-sm">
+                    <li v-for="restaurant in recentlyViewed" :key="restaurant.id" class="list-group-item d-flex justify-content-between align-items-center">
+                      <!-- Display Restaurant Name -->
+                      <span class="text-dark">{{ selectedListRestaurantsName[restaurant.id] || 'Loading name...' }}</span>
+
+                      <!-- Display Visit Count -->
                       <span class="badge badge-primary badge-pill">{{ restaurant.visitCount }} visits</span>
+
                     </li>
                   </ul>
+
+                  <!-- If no recently viewed restaurants, show this message -->
                   <div v-else class="text-center mt-4">
                     <p class="text-muted">No recently viewed restaurants yet.</p>
                     <a href="#" @click.prevent="navigateToHome" class="btn btn-outline-dark btn-sm">
@@ -49,9 +51,9 @@
                     </a>
                   </div>
 
+
                   <!-- Display Favorite Lists -->
                   <h5 class="text-left w-100 mt-4 mb-2 text-muted">Your Favorite Lists</h5>
-                  <!-- Filter Options -->
                   <div class="mb-3">
                     <label>
                       <input
@@ -74,51 +76,104 @@
                   </div>
 
                   <!-- Display Favorite Lists -->
-                  <ul v-if="filteredFavoriteListsComputed.length > 0" class="list-group w-100 shadow-sm">
-                    <li
-                        v-for="list in filteredFavoriteListsComputed"
-                        :key="list.id"
-                        class="list-group-item d-flex justify-content-between align-items-center"
-                        @click="fetchRestaurantsForList(list.id)"
-                    >
-                      <span class="text-dark">{{ list.name }}</span>
-                      <span class="badge badge-secondary badge-pill">{{ list.restaurants.length }} restaurants</span>
-                    </li>
-                  </ul>
-
-                  <div v-else class="text-center mt-4">
-                    <p class="text-muted">No favorite lists yet.</p>
+                  <div v-if="filteredFavoriteListsComputed.length === 0">
+                    <h5 class="text-left w-100 mt-4 mb-2 text-muted">Create Your Favorite List</h5>
+                    <div class="mb-3">
+                      <input
+                          type="text"
+                          v-model="favoriteListName"
+                          class="form-control"
+                          placeholder="Enter favorite list name"
+                      />
+                      <button
+                          @click="createFavoriteList"
+                          class="btn btn-primary mt-2"
+                          :disabled="!favoriteListName.trim()"
+                      >
+                        Create Favorite List
+                      </button>
+                    </div>
                   </div>
-
-                  <!-- Display Restaurants in Selected List -->
-                  <div v-if="selectedListRestaurants.length > 0" class="mt-4">
-                    <h5 class="text-left w-100 mt-3 mb-2 text-muted">
-                      Restaurants in "{{ selectedList.name }}"
-                    </h5>
+                  <div v-else>
                     <ul class="list-group w-100 shadow-sm">
-                      <li v-for="restaurant in selectedListRestaurants" :key="restaurant.id" class="list-group-item">
-                        {{ getRestaurantNameById(restaurant.id) }}
+                      <li
+                          v-for="list in filteredFavoriteListsComputed"
+                          :key="list.id"
+                          class="list-group-item d-flex justify-content-between align-items-center"
+                          @click="fetchRestaurantsForList(list.id)"
+                      >
+                        <span class="text-dark">{{ list.name }}</span>
+                        <span class="badge badge-secondary badge-pill">{{ list.restaurants.length }} restaurants</span>
                       </li>
                     </ul>
                   </div>
 
-                  <!-- Create New Favorite List Section -->
-                  <h5 class="text-left w-100 mt-4 mb-2 text-muted">Create Your Favorite List</h5>
-                  <div class="mb-3">
-                    <input
-                        type="text"
-                        v-model="favoriteListName"
-                        class="form-control"
-                        placeholder="Enter favorite list name"
+                  <!-- Display Restaurants in Selected List -->
+                  <div v-if="selectedListRestaurants.length >= 0" class="mt-4">
+                    <div class="d-flex align-items-center mb-4">
+                      <!-- Restaurant List Name and Edit Button -->
+                      <h5 class="text-left w-100 mt-3 mb-2 text-muted d-flex align-items-center">
+      <span v-if="isEditingName" class="mr-2">
+        <input
+            v-model="editedListName"
+            class="form-control d-inline-block w-auto"
+            type="text"
+        />
+      </span>
+                        <span v-else>{{ selectedList?.name || 'No List Selected' }}</span>
+
+                        <!-- Edit List Name Button -->
+                        <button v-if="!isEditingName" @click="editListName" class="btn btn-warning btn-sm ml-3">
+                          <i class="fa fa-edit"></i> Edit
+                        </button>
+
+                        <!-- Save List Name Button -->
+                        <button v-if="isEditingName" @click="saveListName" class="btn btn-primary btn-sm ml-3">
+                          <i class="fa fa-save"></i> Save
+                        </button>
+                        <!-- Add Restaurant to List -->
+                        <div class="mb-3">
+                          <button @click="toggleRestaurantListModal" class="btn btn-success btn-sm ml-3">
+                            <i class="fa fa-plus"></i> Add Restaurant to Favorite List
+                          </button>
+                        </div>
+
+                        <!-- Delete List -->
+                        <div class="mb-3">
+                          <button @click.stop="deleteFavoriteList(selectedList.id)" class="btn btn-danger btn-sm ml-3">
+                            <i class="fa fa-trash"></i> Delete List
+                          </button>
+                        </div>
+                      </h5>
+                    </div>
+
+
+
+                    <!-- Restaurant List Modal Component -->
+                    <RestaurantModal
+                        :show="showRestaurantListModal"
+                        :allRestaurants="allRestaurant"
+                        @update:show="showRestaurantListModal = $event"
+                        @add-restaurants="addRestaurantToFavoriteList"
                     />
-                    <button
-                        @click="createFavoriteList"
-                        class="btn btn-primary mt-2"
-                        :disabled="!favoriteListName.trim()"
-                    >
-                      Create Favorite List
-                    </button>
+
+                    <!-- Display Restaurants in the List -->
+                    <ul class="list-group w-100 shadow-sm">
+                      <li v-if="selectedListRestaurants.length === 0" class="list-group-item text-center">
+                        No Restaurant
+                      </li>
+
+                      <!-- Loop through the restaurants if they exist -->
+                      <li v-for="restaurant in selectedListRestaurants" :key="restaurant.id" class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ selectedListRestaurantsName[restaurant.id] || 'Loading name...' }}
+                        <button @click="deleteRestaurantToFavoriteList(restaurant.id)" class="btn btn-danger btn-sm ml-2">
+                          <i class="fa fa-trash"></i> Remove
+                        </button>
+                      </li>
+                    </ul>
                   </div>
+
+
                 </div>
               </div>
             </div>
@@ -144,17 +199,23 @@
 <script>
 import { auth } from '../../firebaseConfig'; // Adjust the path as needed
 import { onAuthStateChanged } from 'firebase/auth';
-import restaurants from "../data/restaurant_list.json";
+//import restaurants from "../data/restaurant_list.json";
 import favorites from "../api/favorites";
+import restaurant from "@/api/restaurant";
+import RestaurantModal from "@/components/RestaurantModal.vue";
+import {VisiteService} from "@/api/Visite";
 
 
 export default {
   name: 'ProfilePage',
+  components: {RestaurantModal},
   data() {
     return {
       user: null,
       userScore: 0, // Variable to hold the user's score
       defaultAvatar: 'https://via.placeholder.com/150/000000/FFFFFF/?text=Avatar', // Default avatar if none exists
+      allRestaurant :[],
+      showRestaurantListModal: false, // Modal visibility
       recentRestaurants: [], // List of recently viewed restaurants with visit counts
       favoriteListName: '',
       showAllFavorites: 'user', // Default to showing user's own favorites
@@ -162,6 +223,11 @@ export default {
       showAllFavoritesData: [], // Stores all favorite lists
       selectedList: null, // Stores the currently selected list
       selectedListRestaurants: [],
+      selectedListRestaurantsName: [],
+      isEditingName: false, // Flag to toggle between view and edit mode
+      editedListName: '', // Temporarily holds the edited list name
+      recentlyViewed: [],
+      recentlyViewedName: [],
     };
   },
   created() {
@@ -169,8 +235,18 @@ export default {
     this.fetchRecentRestaurants();
     this.fetchFavoriteLists();
     this.fetchFavoriteListsUser();
+    this.fetchAllRestaurant();
+    this.fetchvisitedRestaurant();
   },
   methods: {
+    editListName() {
+      if (this.selectedList) {
+        this.isEditingName = true;
+        this.editedListName = this.selectedList.name; // Pre-fill with the current list name
+      } else {
+        console.error("No list selected to edit.");
+      }
+    },
     fetchUser() {
       // Fetch authenticated user data from Firebase
       onAuthStateChanged(auth, (user) => {
@@ -179,6 +255,9 @@ export default {
           this.fetchRecentRestaurants();
         }
       });
+    },
+    toggleRestaurantListModal() {
+      this.showRestaurantListModal = !this.showRestaurantListModal;  // Toggle modal visibility
     },
     async fetchRecentRestaurants() {
       const user = auth.currentUser;
@@ -215,10 +294,7 @@ export default {
         this.userScore = 0;
       }
     },
-    getRestaurantNameById(restaurantId) {
-      const restaurant = restaurants.find(r => r.id === restaurantId);
-      return restaurant ? restaurant.name : null;
-    },
+
     fetchUserScore() {
       // Mock score value, replace this logic with actual score fetching from your backend
       // For example, fetching score from a Firestore database or other backend service
@@ -233,18 +309,11 @@ export default {
     },
 
     async createFavoriteList() {
-      /*const token = getAuthToken(); // Get the auth token from local storage
-      if (!token || !this.favoriteListName.trim()) {
-        console.error('Invalid token or favorite list name');
-        return;
-      }*/
-
       try {
         // Call the API to create the favorite list
         const response = await favorites.postFavorite(this.favoriteListName, 'tb@test.fr');
 
         if (response && response.id) {
-          // Handle success (reset input field, display a success message, etc.)
           console.log('Favorite list created:', response);
           this.favoriteListName = ''; // Reset the input field
         } else {
@@ -275,22 +344,151 @@ export default {
       }
     },
 
-      async fetchRestaurantsForList(listId) {
-        try {
-          const response = await favorites.getFavoriteById(listId);
-          console.log('Fetched Restaurants:', response);
+    async fetchRestaurantsForList(listId) {
+      try {
+        const response = await favorites.getFavoriteById(listId);
 
-          if (response && response.restaurants) {
-            this.selectedListRestaurants = response.restaurants;
-            this.selectedList = response;
-          } else {
-            this.selectedListRestaurants = [];
-          }
-        } catch (error) {
-          console.error('Error fetching restaurants:', error);
+        if (response && response.restaurants) {
+          this.selectedListRestaurants = response.restaurants;
+          this.selectedList = response;
+          this.selectedListRestaurants.forEach(restaurant => {
+            this.getRestaurantNameById(restaurant.id);
+          });
+        } else {
+          this.selectedListRestaurants = [];
         }
+      } catch (error) {
+        console.error('Error fetching restaurants:', error);
       }
     },
+
+    async fetchvisitedRestaurant() {
+      try {
+        const response = await VisiteService.obtenirVisites('61916127f8f8790004fd287e');
+
+        if (response && response.items) {
+          this.recentlyViewed = response.items;
+          this.recentlyViewed.forEach(items => {
+            this.getRecentlyRestaurantNameById(items.restaurant_id);
+          });
+        } else {
+          this.recentlyViewed = [];
+        }
+      } catch (error) {
+        console.error('Error fetching restaurants:', error);
+      }
+    },
+
+    async getRestaurantNameById(restaurantId) {
+      try {
+        const response = await restaurant.getRestaurantById(restaurantId);  // Call the API with the restaurantId
+
+        if (response && response.name) {
+          this.selectedListRestaurantsName[restaurantId] = response.name;  // Store the restaurant name by restaurantId
+        } else {
+          this.selectedListRestaurantsName[restaurantId] = 'Unknown Restaurant';  // Default if name is not found
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant name for ID:', restaurantId, error);
+      }
+    },
+
+    async getRecentlyRestaurantNameById(restaurantId) {
+      try {
+        const response = await restaurant.getRestaurantById(restaurantId);  // Call the API with the restaurantId
+
+        if (response && response.name) {
+          this.recentlyViewedName[restaurantId] = response.name;  // Store the restaurant name by restaurantId
+        } else {
+          this.recentlyViewedName[restaurantId] = 'Unknown Restaurant';  // Default if name is not found
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant name for ID:', restaurantId, error);
+      }
+    },
+
+    async fetchAllRestaurant() {
+      const response = await restaurant.getRestaurants(); // Call the API to fetch the lists
+      if (response && response.items) {
+        this.allRestaurant = response.items;
+      } else {
+        this.allRestaurant = [];
+      }
+    },
+
+    async addRestaurantToFavoriteList(restaurantId) {
+      try {
+        // Call the API to create the favorite list
+        const response = await favorites.postFavoriteRestaurant(this.selectedList.id, restaurantId);
+
+        if (response && response.id) {
+          console.log('Restaurant added:', response);
+          this.fetchRestaurantsForList(this.selectedList.id);
+          this.fetchFavoriteListsUser();
+          this.fetchFavoriteLists();
+        } else {
+          console.error('Failed to add restaurant');
+        }
+      } catch (error) {
+        console.error('Error adding restaurant:', error);
+      }
+    },
+
+    async deleteRestaurantToFavoriteList(restaurantId) {
+      try {
+        // Call the API to create the favorite list
+        const response = await favorites.deleteFavoriteRestaurant(this.selectedList.id, restaurantId);
+
+        if (response && response.id) {
+          console.log('Restaurant delete:', response);
+          this.fetchRestaurantsForList(this.selectedList.id);
+          this.fetchFavoriteListsUser();
+          this.fetchFavoriteLists();
+        } else {
+          console.error('Failed to delete restaurant');
+        }
+      } catch (error) {
+        console.error('Error delete restaurant:', error);
+      }
+    },
+
+    async deleteFavoriteList() {
+      try {
+        // Call the API to create the favorite list
+        const response = await favorites.deleteFavoriteById(this.selectedList.id);
+
+        if (response) {
+          console.log('List delete:', response);
+          this.selectedList = null;
+          this.selectedListRestaurants = [];
+          this.fetchFavoriteListsUser();
+          this.fetchFavoriteLists();
+        } else {
+          console.error('Failed to delete restaurant');
+        }
+      } catch (error) {
+        console.error('Error delete restaurant:', error);
+      }
+    },
+    async saveListName() {
+      try {
+        const response = await favorites.putFavoriteById(this.selectedList.id, this.editedListName,'tb@test.fr');
+
+        if (response) {
+          this.selectedList.name = this.editedListName; // Update the list name in the UI
+          this.isEditingName = false; // Switch back to view mode
+        }
+      } catch (error) {
+        console.error('Error saving list name:', error);
+      }
+    },
+  },
+
+
+
+
+
+
 
 
   computed: {
