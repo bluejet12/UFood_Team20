@@ -40,7 +40,7 @@
       </div>
       <div class="d-flex justify-content-between my-3">
         <button @click="getDirections(restaurant)" class="w-25">Directions</button>
-        <button v-if="this.user" @click="addFavorite()" class="w-25">Favorite</button>
+        <button v-if="this.user && this.selectedFavorite" @click="addFavorite()" class="w-25">Favorite</button>
         <button v-if="this.user" @click="openModalVisite()" class="w-25">Visited</button>
       </div>
       <div  v-if="this.user" class="row text-center align-content-center justify-content-center">
@@ -238,19 +238,17 @@ export default {
       navigator.geolocation.getCurrentPosition(success);
     },
     async fetchFavorites(){
-      
       const response = await favoriteApi.getFavorites();
       const favorites = response.items;
-      
       if(favorites){
         this.favorites = favorites;
       }
     },
     async addFavorite(){
-     
-      console.log("Selected Favorite",this.selectedFavorite);
-      const response = await favoriteApi.putFavoriteById(this.selectedFavorite.id ,this.selectedFavorite.name, this.user.email);
-      console.log("PutfAVORITE RESPONSE",response);
+      const response = await favoriteApi.postFavoriteRestaurant(this.selectedFavorite.id ,this.id);
+      if(response){
+        console.log("Favorite added");
+      }
     },
     openModalVisite() {
       this.showModalVisite = true;
