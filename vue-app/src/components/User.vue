@@ -44,6 +44,17 @@
 
                         <!-- Display Visit Count -->
                         <span class="badge badge-primary badge-pill">{{ restaurant.visitCount }} visits</span>
+                        <div>
+                          <button @click="openRestaurantModal(restaurant.id)">View Details</button>
+
+
+                          <!-- Restaurant Modal Component -->
+                          <RestaurantModal
+                              :show="showRestaurantModal"
+                              :restaurant=selectedResto
+                              @update:show="showRestaurantModal = $event"
+                          />
+                        </div>
                       </li>
                     </ul>
 
@@ -153,7 +164,7 @@
 
 
                     <!-- Restaurant List Modal Component -->
-                    <RestaurantModal
+                    <RestaurantChoiceModal
                         :show="showRestaurantListModal"
                         :allRestaurants="allRestaurant"
                         @update:show="showRestaurantListModal = $event"
@@ -211,14 +222,15 @@ import { auth } from '../../firebaseConfig'; // Adjust the path as needed
 import { onAuthStateChanged } from 'firebase/auth';
 import favorites from "../api/favorites";
 import restaurant from "@/api/restaurant";
-import RestaurantModal from "@/components/RestaurantModal.vue";
+import RestaurantChoiceModal from "@/components/RestaurantChoiceModal.vue";
 import {VisiteService} from "@/api/Visite";
 import ModalVisiteReadOnly from './ModalVisiteReadOnly.vue';
+import RestaurantModal from "@/components/RestaurantModal.vue";
 
 
 export default {
   name: 'ProfilePage',
-  components: {RestaurantModal,ModalVisiteReadOnly},
+  components: {RestaurantChoiceModal, RestaurantModal,ModalVisiteReadOnly},
   data() {
     return {
       user: null,
@@ -239,7 +251,9 @@ export default {
       recentlyViewed: [],
       recentlyViewedName: [],
       showModal: false,
-      selectedRestaurant: {}
+      selectedRestaurant: {},
+      showRestaurantModal: false,
+      selectedResto: null,
     };
   },
   created() {
@@ -251,6 +265,11 @@ export default {
     this.fetchvisitedRestaurant();
   },
   methods: {
+    async openRestaurantModal(restaurantId) {
+      this.getRestaurantByID(restaurantId);
+      console.log("Selected Restaurant", this.selectedRestaurant)
+      this.showRestaurantModal = true;
+    },
     editListName() {
       if (this.selectedList) {
         this.isEditingName = true;
@@ -416,6 +435,22 @@ export default {
         }
       } catch (error) {
         console.error('Error fetching restaurant name for ID:', restaurantId, error);
+      }
+    },
+
+    async getRestaurantByID(restaurantId) {
+      try {
+        const response = await restaurant.getRestaurantById(restaurantId);  // Call the API with the restaurantId
+        //console.log('Restaurant Name Response:', response);  // Log the response
+
+        if (response && response) {
+          console.log(response)
+          this.selectedResto = response;  // Store the restaurant name by restaurantId
+        } else {
+          this.selectedResto= 'Unknown Restaurant';  // Default if name is not found
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant for ID:', restaurantId, error);
       }
     },
 
