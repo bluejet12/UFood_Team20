@@ -1,6 +1,6 @@
 
 
-const ENDPOINT = 'https://ufoodapi.herokuapp.com';
+const ENDPOINT = "https://ufoodapi.herokuapp.com";
 
 
 const login = async function(email, password) {
@@ -67,24 +67,21 @@ const getTokenInfo = async function(token) {
 }
 
 const signup = async function(name, email, password) {
-    await fetch(`${ENDPOINT}/auth/register`, {
+    await fetch(`${ENDPOINT}/signup`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
-            name: name,
-            email: email,
-            password: password,
-        }),
+        body: `name=${name}&email=${email}&password=${password}`
     })
     .then((response) => {
-        return response.json();
+        return response.text();
     })
     .catch((error) => {
         console.error('an error have occurred:', error);
     });
 }
+
 
 
 const getUserId = function() {

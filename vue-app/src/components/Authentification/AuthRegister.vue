@@ -64,8 +64,7 @@
 </template>
 
 <script>
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../../firebaseConfig'; // Adjust the path as needed
+import auth from "@/api/auth";
 
 export default {
   name: 'AuthRegister',
@@ -80,16 +79,12 @@ export default {
   methods: {
     async register() {
       try {
-        // Create the user with email and password
-        const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
-        // Update the user's profile with the name
-        await updateProfile(userCredential.user, {
-          displayName: this.name,
-        });
-        this.$router.push('/'); // Redirect to home or any other route after registration
+        const result = await auth.signup(this.name, this.email, this.password);
+        console.log("Signup successful:", result);
+        this.$router.push('/'); // Redirect to home or another page
       } catch (error) {
-        this.error = error.message;
-        console.error('Registration error:', error); // Log the error for debugging
+        this.error = error.message || "An unexpected error occurred.";
+        console.error("Error during registration:", error);
       }
     },
     navigateToLogin() {
