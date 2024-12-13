@@ -13,7 +13,7 @@
                 <div class="profile-section d-flex flex-column align-items-center">
                   <!-- Display User Avatar -->
                   <img
-                      :src="user?.photoURL || defaultAvatar"
+                      :src="gravatarUrl"
                       alt="User Avatar"
                       class="rounded-circle mb-3 border border-light shadow-sm"
                       style="width: 120px; height: 120px; object-fit: cover;"
@@ -226,7 +226,7 @@ import RestaurantChoiceModal from "@/components/RestaurantChoiceModal.vue";
 import {VisiteService} from "@/api/Visite";
 import ModalVisiteReadOnly from './ModalVisiteReadOnly.vue';
 import RestaurantModal from "@/components/RestaurantModal.vue";
-
+import CryptoJS from 'crypto-js';
 
 export default {
   name: 'ProfilePage',
@@ -562,6 +562,15 @@ export default {
         return this.filteredFavoriteLists; // Show only the user's favorite lists
       }
       return []; // Default case, no lists
+    },
+    // <-- Added for Gravatar
+    gravatarUrl() {
+      if (!this.user || !this.user.email) {
+        return this.defaultAvatar;
+      }
+      const trimmedEmail = this.user.email.trim().toLowerCase();
+      const hash = CryptoJS.SHA256(trimmedEmail).toString();
+      return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=200`;
     }
   },
 
