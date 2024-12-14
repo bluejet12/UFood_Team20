@@ -35,6 +35,14 @@
               <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
             <p class="text-danger mt-3">{{ error }}</p>
+            <!-- Ajout du bouton de connexion avec Google -->
+            <div class="text-center mt-3">
+              <button type="button" class="btn btn-outline-dark w-100" @click="loginWithGoogle">
+                <img src="@/assets/google-logo.png.png" alt="Google Logo" style="width:20px; margin-right:10px;">
+                Login with Google
+              </button>
+            </div>
+
             <div class="text-center mt-3">
               <p>No account?
                 <a href="#" @click.prevent="navigateToRegister" class="text-primary">Create one</a>
@@ -53,7 +61,7 @@
 </template>
 
 <script>
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../../firebaseConfig'; // Adjust the path as needed
 
 export default {
@@ -79,6 +87,18 @@ export default {
       } catch (error) {
         this.error = error.message;
         console.error('Login error:', error); // Log the error for debugging
+      }
+    },
+    // Méthode pour se connecter via Google
+    async loginWithGoogle() {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+
+        this.$router.push('/');
+      } catch (error) {
+        this.error = error.message;
+        console.error('Google Login Error:', error);
       }
     },
     navigateToRegister() {
