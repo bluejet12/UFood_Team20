@@ -61,8 +61,10 @@
 </template>
 
 <script>
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../../../firebaseConfig'; // Adjust the path as needed
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import auth from "@/api/auth";
+import { eventBus } from '@/utils/eventBus';
+
 
 export default {
   name: 'AuthLogin',
@@ -82,11 +84,21 @@ export default {
   methods: {
     async login() {
       try {
-        await signInWithEmailAndPassword(auth, this.email, this.password);
-        this.$router.push('/'); // Redirect to home after login
+        const result = await auth.login(this.email, this.password);
+        if (!result) {
+          throw new Error("Login failed.");
+        }
+
+        console.log("Login successful:", result);
+
+        // Émettre un événement global pour recharger l'utilisateur
+        eventBus.emit('user-logged-in');
+
+        // Redirection après connexion
+        this.$router.push('/');
       } catch (error) {
-        this.error = error.message;
-        console.error('Login error:', error); // Log the error for debugging
+        this.error = error.message || "An unexpected error occurred.";
+        console.error('Login error:', error);
       }
     },
     // Méthode pour se connecter via Google

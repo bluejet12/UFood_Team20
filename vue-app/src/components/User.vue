@@ -21,7 +21,7 @@
                     />
 
                     <!-- Display User Name -->
-                    <h4 class="mb-2 text-dark font-weight-bold">{{ user?.displayName || 'Anonymous User' }}</h4>
+                    <h4 class="mb-2 text-dark font-weight-bold">{{ user.name || 'Anonymous User' }}</h4>
 
                     <!-- Display User Score -->
                     <div class="user-score mb-4">
@@ -285,8 +285,6 @@
 </template>
 
 <script>
-import { auth } from '../../firebaseConfig'; // Adjust the path as needed
-import { onAuthStateChanged } from 'firebase/auth';
 import userService from "@/api/user";
 import favorites from "../api/favorites";
 import restaurant from "@/api/restaurant";
@@ -295,6 +293,7 @@ import {VisiteService} from "@/api/Visite";
 import ModalVisiteReadOnly from './ModalVisiteReadOnly.vue';
 import RestaurantModal from "@/components/RestaurantModal.vue";
 import CryptoJS from 'crypto-js';
+import auth from "@/api/auth";
 
 export default {
   name: 'ProfilePage',
@@ -353,14 +352,20 @@ export default {
         console.error("No list selected to edit.");
       }
     },
-    fetchUser() {
-      // Fetch authenticated user data from Firebase
-      onAuthStateChanged(auth, (user) => {
-        this.user = user;
-        if (user) {
-          this.fetchRecentRestaurants();
+    async fetchUser() {
+      try {
+        const token = localStorage.getItem('token'); // Retrieve the stored token
+        if (token) {
+          const response = await auth.getTokenInfo(token); // Fetch user info from the token
+          if (response) {
+            this.user = response; // Directly assign API response to user
+            console.log("User fetched successfully:", this.user);
+          }
         }
-      });
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        this.user = null;
+      }
     },
     toggleRestaurantListModal() {
       this.showRestaurantListModal = !this.showRestaurantListModal;  // Toggle modal visibility

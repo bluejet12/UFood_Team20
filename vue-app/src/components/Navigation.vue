@@ -94,7 +94,7 @@
               class="rounded-circle shadow-sm"
               alt="User Avatar"
               style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #90CAF9;"/>
-            <span class="ml-2 text-dark font-weight-bold">{{ user.displayName || 'User' }}</span>
+            <span class="ml-2 text-dark font-weight-bold">{{ user.name || 'User' }}</span>
             <a
               class="nav-link dropdown-toggle d-flex align-items-center"
               href="#"
@@ -116,10 +116,11 @@
 </template>
 
 <script>
-import { auth } from '../../firebaseConfig';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
 import restaurant from '@/api/restaurant'; // Importing the API function
 import userService from '@/api/user';
+import auth from '@/api/auth';
+import { eventBus } from '@/utils/eventBus';
+
 
 export default {
   name: 'NavigationBar',
@@ -141,14 +142,27 @@ export default {
     this.fetchUser();
     this.loadRestaurants();  // Load restaurants on component creation
     this.loadUserList();
+    eventBus.on('user-logged-in', this.fetchUser);
+  },
+  beforeUnmount() {
+    // Nettoyer l'écouteur pour éviter les fuites mémoire
+    eventBus.off('user-logged-in', this.fetchUser);
   },
   methods: {
-    fetchUser() {
-      onAuthStateChanged(auth, (user) => {
-        this.user = user;
-      });
-      this.user = localStorage.getItem('userId');
-      console.log(this);
+    async fetchUser() {
+      try {
+        const token = localStorage.getItem('token'); // Récupérer le token sauvegardé
+        if (token) {
+          const response = await auth.getTokenInfo(token); // Appel API pour récupérer l'utilisateur
+          if (response) {
+            this.user = response; // Mettre à jour l'utilisateur
+            console.log("User fetched successfully:", this.user);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        this.user = null;
+      }
     },
     navigateToLogin() {
       this.$router.push('/login');
@@ -158,9 +172,11 @@ export default {
     },
     async logoutUser() {
       try {
-        await signOut(auth);
+        await auth.logout(); // Appel API pour se déconnecter
+        localStorage.removeItem('token'); // Nettoyer le token
+        localStorage.removeItem('userId');
         this.user = null;
-        this.$router.push('/');
+        this.$router.push('/login'); // Rediriger vers la page de connexion
       } catch (error) {
         console.error('Error logging out:', error);
       }
