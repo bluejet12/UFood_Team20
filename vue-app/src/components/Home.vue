@@ -59,7 +59,7 @@
                 {{ restaurant.genres && restaurant.genres.length ? restaurant.genres.join(', ') : 'No genres available' }}<br>
                 {{ '$'.repeat(restaurant.price_range) }}<br>
                 {{ restaurant.rating.toFixed(1) }}<br>
-                {{ distanceCalc(restaurant) }}
+                {{ distances.restaurant.id/1000 }} km
 
               </router-link>
             </l-popup>
@@ -121,7 +121,7 @@ export default {
       userId: null,
       mapMode: false,
       zoom: 10,
-      location: null
+      distances: new Map()
     };
   },
   computed: {
@@ -227,13 +227,13 @@ export default {
       function success(position) {
         this.map.setView(position.coords, this.zoom);
         this.position = position.coords;
+        this.restaurants.forEach((restaurant) => {
+          let dist = this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
+              [restaurant.location.coordinates[0], restaurant.location.coordinates[1]])
+          this.distances.set(restaurant.id, dist);
+        })
       }
       navigator.geolocation.getCurrentPosition(success);
-    },
-    distanceCalc(restaurant){
-      if(this.position != null)
-      return this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
-          [restaurant.location.coordinates[0], restaurant.location.coordinates[1]]);
     }
   },
   components: {
