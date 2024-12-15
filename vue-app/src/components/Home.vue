@@ -122,7 +122,8 @@ export default {
       mapMode: false,
       zoom: 10,
       position: [46.77880, -71.27474],
-      distances: new Map()
+      distances: new Map(),
+      map: LMap
     };
   },
   computed: {
@@ -209,10 +210,9 @@ export default {
         const response = await restaurantApi.getRestaurants();
         this.restaurants = response.items || [];
         const success = function (position) {
-          this.map.setView(position.coords, this.zoom);
           this.position = position.coords;
           this.restaurants.forEach(restaurant => {
-            this.distances.set(restaurant.id, this.map.distance([this.position.coords.latitude,
+            this.distances.set(restaurant.id, LMap.distance([this.position.coords.latitude,
                   this.position.coords.longitude], [restaurant.location.coordinates[0],
                   restaurant.location.coordinates[1]]))
           });
@@ -232,19 +232,6 @@ export default {
     },
     switchMode() {
       this.mapMode = !this.mapMode;
-      if(!this.mapMode) {
-        return;
-      }
-      function success(position) {
-        this.map.setView(position.coords, this.zoom);
-        this.position = position.coords;
-      }
-      navigator.geolocation.getCurrentPosition(success);
-    },
-    distanceCalc(restaurant){
-      if(this.position != null)
-      return this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
-          [restaurant.location.coordinates[0], restaurant.location.coordinates[1]]);
     }
   },
   components: {
