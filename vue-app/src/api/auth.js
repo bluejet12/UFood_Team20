@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 
 
 const ENDPOINT = "https://ufoodapi.herokuapp.com";
@@ -21,26 +22,28 @@ const login = async function (email, password) {
         }
 
         const data = await response.json();
-        // Stocker le token et l'ID utilisateur dans le localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userId', data.id);
+
+        // Store token and userId in cookies
+        Cookies.set('token', data.token, { expires: 1 }); // Expires in 1 day
+        Cookies.set('userId', data.id, { expires: 1 });
 
         console.log("Login successful:", data);
         return data.id;
     } catch (error) {
         console.error('An error occurred during login:', error);
+        throw error; // Re-throw for the caller to handle
     }
 };
 
 const logout = async function () {
     try {
-        const token = localStorage.getItem('token'); // Récupérer le token stocké
+        const token = Cookies.get('token'); // Get the token from the cookie
 
         const response = await fetch(`${ENDPOINT}/logout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': token, // Envoyer le token dans l'en-tête
+                'Authorization': `Bearer ${token}`, // Include token in the Authorization header
             },
         });
 
@@ -48,36 +51,47 @@ const logout = async function () {
             throw new Error(`Logout failed: ${response.statusText}`);
         }
 
-        // Nettoyer le localStorage
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
+        // Clear the cookies
+        Cookies.remove('token');
+        Cookies.remove('userId');
 
         console.log("Logout successful");
     } catch (error) {
         console.error('An error occurred during logout:', error);
+        throw error; // Re-throw for the caller to handle
     }
 };
 
-const getTokenInfo = async function(token) {
+const getTokenInfo = async function () {
     try {
+        const token = Cookies.get('token'); // Get the token from the cookie
+        if (!token) {
+            throw new Error('No token found');
+        }
+
         const response = await fetch(`${ENDPOINT}/tokenInfo`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token, // Remplacer directement par le token sans 'Bearer'
+                'Authorization': `Bearer ${token}`, // Use the token for authentication
             },
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                // Token expired or invalid
+                Cookies.remove('token');
+                Cookies.remove('userId');
+                throw new Error('Token expired. Please log in again.');
+            }
             throw new Error(`Failed to fetch token info: ${response.statusText}`);
         }
 
-        const data = await response.json(); // Attendre la réponse JSON
+        const data = await response.json();
         console.log("Token info fetched successfully:", data);
-        return data; // Retourner les informations de l'utilisateur
+        return data; // Return user info
     } catch (error) {
         console.error("An error occurred while fetching token info:", error.message);
-        return null; // Retourner null en cas d'erreur
+        throw error; // Re-throw for the caller to handle
     }
 };
 
@@ -108,19 +122,20 @@ const signup = async (name, email, password) => {
         return result; // Contains the created user's info
     } catch (error) {
         console.error('An error occurred during signup:', error);
+        throw error; // Re-throw for the caller to handle
     }
 };
 
 
 
+const getUserId = function () {
+    return Cookies.get('userId');
+};
 
-const getUserId = function() {
-    return localStorage.getItem('userId');
-}
-
-const getToken = function() {
-    return localStorage.getItem('token');
-}
+// Helper to get the token from the cookie
+const getToken = function () {
+    return Cookies.get('token');
+};
 export default {
     login,
     logout,

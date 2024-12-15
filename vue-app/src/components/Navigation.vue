@@ -120,6 +120,8 @@ import restaurant from '@/api/restaurant'; // Importing the API function
 import userService from '@/api/user';
 import auth from '@/api/auth';
 import { eventBus } from '@/utils/eventBus';
+import Cookies from 'js-cookie';
+
 
 
 export default {
@@ -151,17 +153,25 @@ export default {
   methods: {
     async fetchUser() {
       try {
-        const token = localStorage.getItem('token'); // Récupérer le token sauvegardé
+        const token = Cookies.get('token'); // Retrieve the token from the cookie
         if (token) {
-          const response = await auth.getTokenInfo(token); // Appel API pour récupérer l'utilisateur
+          const response = await auth.getTokenInfo(); // Use the updated `auth.getTokenInfo` which reads from cookies
           if (response) {
-            this.user = response; // Mettre à jour l'utilisateur
+            this.user = response; // Update the user
             console.log("User fetched successfully:", this.user);
           }
+        } else {
+          console.log('No token found in cookies.');
+          this.user = null;
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
         this.user = null;
+
+        // Handle token expiration or invalid token
+        if (error.message === 'Token expired. Please log in again.') {
+          this.$router.push('/login'); // Redirect to login if token expired
+        }
       }
     },
     navigateToLogin() {
@@ -172,11 +182,12 @@ export default {
     },
     async logoutUser() {
       try {
-        await auth.logout(); // Appel API pour se déconnecter
-        localStorage.removeItem('token'); // Nettoyer le token
-        localStorage.removeItem('userId');
-        this.user = null;
-        this.$router.push('/login'); // Rediriger vers la page de connexion
+        await auth.logout(); // Call the API to log out
+        Cookies.remove('token'); // Remove the token from cookies
+        Cookies.remove('userId'); // Remove the user ID from cookies
+        this.user = null; // Clear the user data
+        this.$router.push('/login'); // Redirect to the login page
+        console.log('Logout successful');
       } catch (error) {
         console.error('Error logging out:', error);
       }

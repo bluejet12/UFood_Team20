@@ -294,6 +294,8 @@ import ModalVisiteReadOnly from './ModalVisiteReadOnly.vue';
 import RestaurantModal from "@/components/RestaurantModal.vue";
 import CryptoJS from 'crypto-js';
 import auth from "@/api/auth";
+import Cookies from 'js-cookie';
+
 
 export default {
   name: 'ProfilePage',
@@ -354,17 +356,25 @@ export default {
     },
     async fetchUser() {
       try {
-        const token = localStorage.getItem('token'); // Retrieve the stored token
+        const token = Cookies.get('token'); // Retrieve the token from the cookie
         if (token) {
-          const response = await auth.getTokenInfo(token); // Fetch user info from the token
+          const response = await auth.getTokenInfo(); // Fetch user info using the token
           if (response) {
-            this.user = response; // Directly assign API response to user
+            this.user = response; // Assign the API response to the `user`
             console.log("User fetched successfully:", this.user);
           }
+        } else {
+          console.log('No token found in cookies.');
+          this.user = null;
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
         this.user = null;
+
+        // Handle token expiration or invalid token
+        if (error.message === 'Token expired. Please log in again.') {
+          this.$router.push('/login'); // Redirect to the login page if token expired
+        }
       }
     },
     toggleRestaurantListModal() {
