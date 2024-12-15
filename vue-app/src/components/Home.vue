@@ -218,7 +218,8 @@ export default {
         });
         // eslint-disable-next-line no-inner-declarations
         function success(position) {
-          this.position = position.coords;
+          this.position[0] = position.coords.latitude;
+          this.position[1] = position.coords.longitude;
           this.restaurants.forEach(restaurant => {
             this.distances.set(restaurant.id, Math.acos(Math.sin((3.14159/180)*(90-this.position[0]))*
                 Math.sin((3.14159/180)*(90-restaurant.location.coordinates[1]))*
