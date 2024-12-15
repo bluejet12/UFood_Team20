@@ -59,7 +59,7 @@
                 {{ restaurant.genres && restaurant.genres.length ? restaurant.genres.join(', ') : 'No genres available' }}<br>
                 {{ '$'.repeat(restaurant.price_range) }}<br>
                 {{ restaurant.rating.toFixed(1) }}<br>
-                {{ distances.get(restaurant.id) }}
+                {{ distances.get(restaurant.id).toFixed(1) }} km
 
               </router-link>
             </l-popup>
@@ -121,7 +121,7 @@ export default {
       userId: null,
       mapMode: false,
       zoom: 10,
-      position: [46.77880, -71.27474],
+      position: [46.77880, -71.27474],//TODO .coords.latlon
       distances: new Map(),
       map: LMap
     };
@@ -209,14 +209,24 @@ export default {
       try {
         const response = await restaurantApi.getRestaurants();
         this.restaurants = response.items || [];
-        const success = function (position) {
+        this.restaurants.forEach(restaurant => {
+          this.distances.set(restaurant.id, Math.acos(Math.sin((3.14159/180)*(90-this.position[0]))*
+              Math.sin((3.14159/180)*(90-restaurant.location.coordinates[1]))*
+              Math.cos((3.14159/180)*Math.abs(this.position[1] - restaurant.location.coordinates[0])) +
+              Math.cos((3.14159/180)*(90-this.position[0]))*Math.cos((3.14159/180)*
+                  (90-restaurant.location.coordinates[1])))* (180/3.14159)*60*1.852);
+        });
+        // eslint-disable-next-line no-inner-declarations
+        function success(position) {
           this.position = position.coords;
           this.restaurants.forEach(restaurant => {
-            this.distances.set(restaurant.id, LMap.distance([this.position.coords.latitude,
-                  this.position.coords.longitude], [restaurant.location.coordinates[0],
-                  restaurant.location.coordinates[1]]))
+            this.distances.set(restaurant.id, Math.acos(Math.sin((3.14159/180)*(90-this.position[0]))*
+                Math.sin((3.14159/180)*(90-restaurant.location.coordinates[1]))*
+                Math.cos((3.14159/180)*Math.abs(this.position[1] - restaurant.location.coordinates[0])) +
+                Math.cos((3.14159/180)*(90-this.position[0]))*Math.cos((3.14159/180)*
+                    (90-restaurant.location.coordinates[1])))* (180/3.14159)*60*1.852);
           });
-        };
+        }
         navigator.geolocation.getCurrentPosition(success);
       } catch (error) {
         console.error("Error fetching restaurants:", error);
