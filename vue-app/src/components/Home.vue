@@ -59,7 +59,7 @@
                 {{ restaurant.genres && restaurant.genres.length ? restaurant.genres.join(', ') : 'No genres available' }}<br>
                 {{ '$'.repeat(restaurant.price_range) }}<br>
                 {{ restaurant.rating.toFixed(1) }}<br>
-                {{ distances.restaurant.id/1000 }} km
+                {{ distances.get(restaurant.id) }}
 
               </router-link>
             </l-popup>
@@ -121,8 +121,8 @@ export default {
       userId: null,
       mapMode: false,
       zoom: 10,
-      distances: new Map(),
-      position: [46.77880, -71.27474]
+      position: [46.77880, -71.27474],
+      distances: new Map()
     };
   },
   computed: {
@@ -208,19 +208,19 @@ export default {
       try {
         const response = await restaurantApi.getRestaurants();
         this.restaurants = response.items || [];
+        const success = function (position) {
+          this.map.setView(position.coords, this.zoom);
+          this.position = position.coords;
+          this.restaurants.forEach(restaurant => {
+            this.distances.set(restaurant.id, this.map.distance([this.position.coords.latitude,
+                  this.position.coords.longitude], [restaurant.location.coordinates[0],
+                  restaurant.location.coordinates[1]]))
+          });
+        };
+        navigator.geolocation.getCurrentPosition(success);
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       }
-      function success(position) {
-        this.map.setView(position.coords, this.zoom);
-        this.position = position.coords;
-        this.restaurants.forEach((restaurant) => {
-          let dist = this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
-              [restaurant.location.coordinates[0], restaurant.location.coordinates[1]])
-          this.distances.set(restaurant.id, dist);
-        })
-      }
-      navigator.geolocation.getCurrentPosition(success);
     },
     afficherMessageSucces(message) {
       console.log("Message de succès reçu :", message); // Ajout du log
@@ -232,6 +232,19 @@ export default {
     },
     switchMode() {
       this.mapMode = !this.mapMode;
+      if(!this.mapMode) {
+        return;
+      }
+      function success(position) {
+        this.map.setView(position.coords, this.zoom);
+        this.position = position.coords;
+      }
+      navigator.geolocation.getCurrentPosition(success);
+    },
+    distanceCalc(restaurant){
+      if(this.position != null)
+      return this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
+          [restaurant.location.coordinates[0], restaurant.location.coordinates[1]]);
     }
   },
   components: {
