@@ -121,7 +121,7 @@ export default {
       userId: null,
       mapMode: false,
       zoom: 10,
-      position: [46.77880, -71.27474],//TODO .coords.latlon
+      position: [46.77880, -71.27474],
       distances: new Map(),
       map: LMap
     };
