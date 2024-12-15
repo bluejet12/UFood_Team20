@@ -6,25 +6,28 @@
             type="text"
             v-model="searchQuery"
             class="form-control"
-            style="width: 200px;"
+            style="width: 160px;"
             placeholder="Search for a restaurant"
             @input="filterRestaurants"
         />
-        <select class="form-select ml-2" v-model="selectedType" @change="filterRestaurants">
+        <select class="form-select ml-1" v-model="selectedType" @change="filterRestaurants">
           <option value="">All</option>
           <option v-for="genre in genreOptions" :key="genre" :value="genre">{{ genre }}</option>
         </select>
-        <select class="form-select ml-2" v-model="selectedPriceRange" @change="filterRestaurants" style="width: 50px;">
+        <select class="form-select ml-1" v-model="selectedPriceRange" @change="filterRestaurants" style="width: 50px;">
           <option value="">All Prices</option>
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
         </select>
+        <button class="btn btn-sm btn-primary ml-1" @click="switchMode()">
+          Mode carte
+        </button>
       </div>
 
       <!-- Filtered Restaurants List -->
-      <ul class="list-group list-unstyled">
+      <ul class="list-group list-unstyled" v-if="!mapMode">
         <li
             class="list-group-item"
             v-for="restaurant in filteredRestaurants"
@@ -42,6 +45,9 @@
           </button>
         </li>
       </ul>
+      <div id="map" v-if="mapMode">
+        TODO
+      </div>
 
       <!-- Message de succès -->
       <p v-if="messageDeSucces" class="alert alert-success mt-3">{{ messageDeSucces }}</p>
@@ -58,6 +64,10 @@
     </div>
   </div>
 </template>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
 
 <script>
 //import restaurants from "../data/restaurant_list.json";
@@ -93,6 +103,10 @@ export default {
       selectedRestaurantName: '',
       messageDeSucces: '', // Pour stocker le message de succès
       userId: null,
+      mapMode: false,
+      zoom: 12,
+      map: null //TODO = L.map('map')
+      //TODO L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png'){maxZoom: 19, attribution: blah}
     };
   },
   computed: {
@@ -188,6 +202,19 @@ export default {
       setTimeout(() => {
         this.messageDeSucces = ''; // Effacer le message après 3 secondes
       }, 3000);
+    },
+    switchMode() {
+      this.mapMode = !this.mapMode;
+      if(!this.mapMode) {
+        return;
+      }
+      function success(position) {
+        console.log(position);//temporaire
+        //TODO this.map.setView(position.coords, zoomLevel)
+        //TODO afficher restaurants présents dans liste filtrée (probablement à faire dynamiquement ailleurs)
+        //TODO binder popups aux restos, remplir popups avec liens, données etc.
+      }
+      navigator.geolocation.getCurrentPosition(success);
     }
   },
   components: {
@@ -198,6 +225,10 @@ export default {
   }
 };
 </script>
+
+<!--TODO faire marcher ceci <script setup src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>-->
 
 <style scoped>
 .list-unstyled {
