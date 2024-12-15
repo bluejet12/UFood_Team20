@@ -45,8 +45,26 @@
           </button>
         </li>
       </ul>
-      <div id="map" v-if="mapMode">
-        TODO
+      <div style="height: 300px" v-if="mapMode">
+        <l-map ref="map" v-model:zoom="zoom" :center="[46.77880, -71.27474]">
+          <l-tile-layer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            layer-type="base" name="OpenStreetMap"></l-tile-layer>
+          <l-marker v-for="restaurant in filteredRestaurants" :key="restaurant.id"
+                    :lat-lng="[restaurant.location.coordinates[1], restaurant.location.coordinates[0]]">
+            <l-popup>
+              <router-link :to="'/restaurant/' + restaurant.id"
+                           @click.prevent="navigateToRestaurant(restaurant)">
+                <strong>{{ restaurant.name }}</strong> <br>
+                {{ restaurant.genres && restaurant.genres.length ? restaurant.genres.join(', ') : 'No genres available' }}<br>
+                {{ '$'.repeat(restaurant.price_range) }}<br>
+                {{ restaurant.rating.toFixed(1) }}<br>
+                {{ distanceCalc(restaurant) }}
+
+              </router-link>
+            </l-popup>
+          </l-marker>
+        </l-map>
       </div>
 
       <!-- Message de succès -->
@@ -65,15 +83,13 @@
   </div>
 </template>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""/>
-
 <script>
 //import restaurants from "../data/restaurant_list.json";
 import { auth } from '../../firebaseConfig';
 import ModalVisite from '@/components/ModalVisite.vue';
 import restaurantApi from '@/api/restaurant';
+import "leaflet/dist/leaflet.css"
+import {LMap, LTileLayer, LMarker, LPopup} from "@vue-leaflet/vue-leaflet";
 
 export default {
   name: "HomePageComponent",
@@ -104,9 +120,8 @@ export default {
       messageDeSucces: '', // Pour stocker le message de succès
       userId: null,
       mapMode: false,
-      zoom: 12,
-      map: null //TODO = L.map('map')
-      //TODO L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png'){maxZoom: 19, attribution: blah}
+      zoom: 10,
+      location: null
     };
   },
   computed: {
@@ -168,6 +183,7 @@ export default {
           restaurant.price_range == this.selectedPriceRange
         );
       }
+
       return filtered;
     }
   },
@@ -209,26 +225,29 @@ export default {
         return;
       }
       function success(position) {
-        console.log(position);//temporaire
-        //TODO this.map.setView(position.coords, zoomLevel)
-        //TODO afficher restaurants présents dans liste filtrée (probablement à faire dynamiquement ailleurs)
-        //TODO binder popups aux restos, remplir popups avec liens, données etc.
+        this.map.setView(position.coords, this.zoom);
+        this.position = position.coords;
       }
       navigator.geolocation.getCurrentPosition(success);
+    },
+    distanceCalc(restaurant){
+      if(this.position != null)
+      return this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
+          [restaurant.location.coordinates[0], restaurant.location.coordinates[1]]);
     }
   },
   components: {
-    ModalVisite
+    LPopup,
+    ModalVisite,
+    LMap,
+    LTileLayer,
+    LMarker
   },
   mounted() {
     this.fetchRestaurants();
   }
 };
 </script>
-
-<!--TODO faire marcher ceci <script setup src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>-->
 
 <style scoped>
 .list-unstyled {
