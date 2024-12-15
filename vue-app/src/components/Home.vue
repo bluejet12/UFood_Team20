@@ -211,6 +211,16 @@ export default {
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       }
+      function success(position) {
+        this.map.setView(position.coords, this.zoom);
+        this.position = position.coords;
+        this.restaurants.forEach((restaurant) => {
+          let dist = this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
+              [restaurant.location.coordinates[0], restaurant.location.coordinates[1]])
+          this.distances.set(restaurant.id, dist);
+        })
+      }
+      navigator.geolocation.getCurrentPosition(success);
     },
     afficherMessageSucces(message) {
       console.log("Message de succès reçu :", message); // Ajout du log
@@ -222,19 +232,6 @@ export default {
     },
     switchMode() {
       this.mapMode = !this.mapMode;
-      if(!this.mapMode) {
-        return;
-      }
-      function success(position) {
-        this.map.setView(position.coords, this.zoom);
-        this.position = position.coords;
-        this.restaurants.forEach((restaurant) => {
-          let dist = this.map.distance([this.position.coords.latitude, this.position.coords.longitude],
-              [restaurant.location.coordinates[0], restaurant.location.coordinates[1]])
-          this.distances.set(restaurant.id, dist);
-        })
-      }
-      navigator.geolocation.getCurrentPosition(success);
     }
   },
   components: {
