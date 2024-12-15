@@ -46,7 +46,7 @@
         </li>
       </ul>
       <div style="height: 300px" v-if="mapMode">
-        <l-map ref="map" v-model:zoom="zoom" :center="[46.77880, -71.27474]">
+        <l-map ref="map" v-model:zoom="zoom" :center="position">
           <l-tile-layer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             layer-type="base" name="OpenStreetMap"></l-tile-layer>
@@ -121,7 +121,8 @@ export default {
       userId: null,
       mapMode: false,
       zoom: 10,
-      distances: new Map()
+      distances: new Map(),
+      position: [46.77880, -71.27474]
     };
   },
   computed: {
