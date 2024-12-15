@@ -21,33 +21,68 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <div class="form-inline mr-auto custom-right-margin position-relative search-container">
-    <!-- Search Bar -->
-        <input
-          class="form-control mr-sm-2 search-bar"
-          type="search"
-          v-model="searchQuery"
-          placeholder="Search restaurants"
-          aria-label="Search"
-          @input="SearchRestaurants"
-        />
-
-        <!-- Suggestion Dropdown List -->
-        <ul 
-          v-if="filteredSuggestions.length"
-          class="list-group position-absolute suggestion-dropdown" 
+        <div 
+          class="form-inline mr-auto custom-right-margin position-relative search-container"
+          ref="restaurantInputContainer"
         >
-          <li
-            v-for="(suggestion, index) in filteredSuggestions"
-            :key="index"
-            class="list-group-item list-group-item-action"
-            @click="navigateToRestaurant(suggestion)"
+          <input
+            class="form-control mr-sm-2 search-bar"
+            type="search"
+            v-model="searchQuery"
+            placeholder="Search restaurants"
+            aria-label="Search"
+            ref="restaurantInput"
+            @input="searchRestaurants"
+            @focus="showDropdown"
+            @blur="hideDropdown"
+          />
+
+          <ul 
+            v-if="filteredRestaurantSuggestions.length && isDropdownVisible"
+            class="list-group position-absolute suggestion-dropdown" 
           >
+            <li
+              v-for="(suggestion, index) in filteredRestaurantSuggestions"
+              :key="index"
+              class="list-group-item list-group-item-action"
+              @mousedown.prevent="selectSuggestion(suggestion)"
+            >
               {{ suggestion.name }}
             </li>
           </ul>
         </div>
 
+        <div
+          v-if="!user"
+          class="form-inline ml-3 position-relative search-container"
+          ref="userInputContainer"
+        >
+          <input
+            class="form-control mr-sm-2 search-bar"
+            type="search"
+            v-model="userSearchQuery"
+            placeholder="Search users"
+            aria-label="Search"
+            ref="userInput"
+            @input="searchUsers"
+            @focus="showUserDropdown"
+            @blur="hideUserDropdown"
+          />
+
+          <ul
+            v-if="filteredUserSuggestions.length && isUserDropdownVisible"
+            class="list-group position-absolute suggestion-dropdown"
+          >
+            <li
+              v-for="(user, index) in filteredUserSuggestions"
+              :key="index"
+              class="list-group-item list-group-item-action"
+              @mousedown.prevent="selectUserSuggestion(user)"
+            >
+              {{ user.name }}
+            </li>
+          </ul>
+        </div>
         <ul class="navbar-nav ml-auto">
           <!-- User Auth Logic -->
           <li class="nav-item" v-if="!user">
@@ -83,28 +118,37 @@
 <script>
 import { auth } from '../../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import restaurant  from '@/api/restaurant'; // Importing the API function
+import restaurant from '@/api/restaurant'; // Importing the API function
+import userService from '@/api/user';
 
 export default {
   name: 'NavigationBar',
   data() {
     return {
       searchQuery: '',
+      userSearchQuery: '',
       restaurants: [],  // Initially an empty array to be populated from API
-      filteredSuggestions: [],
+      users: [],
+      filteredRestaurantSuggestions: [],
+      filteredUserSuggestions: [],
       user: null,
+      isDropdownVisible: false,
+      isUserDropdownVisible: false,
       defaultAvatar: 'https://via.placeholder.com/150/000000/FFFFFF/?text=Avatar', // Fallback avatar
     };
   },
   created() {
     this.fetchUser();
     this.loadRestaurants();  // Load restaurants on component creation
+    this.loadUserList();
   },
   methods: {
     fetchUser() {
       onAuthStateChanged(auth, (user) => {
         this.user = user;
       });
+      this.user = localStorage.getItem('userId');
+      console.log(this);
     },
     navigateToLogin() {
       this.$router.push('/login');
@@ -128,34 +172,75 @@ export default {
       } catch (error) {
         console.error('Error loading restaurants:', error);
       }
+      console.log(this.restaurants);
     },
-    SearchRestaurants() {
+    async loadUserList() {
+      try {
+        const response = await userService.getListUser();
+        console.log(response.items);
+        if (response && response.items) {
+          this.users = response.items; // Assuming response.data contains the user list
+        } else {
+          console.error('Error fetching users: Response data is undefined');
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+      console.log(this.users);
+    },
+    showUserDropdown() {
+      this.isUserDropdownVisible = true;
+    },
+    hideUserDropdown() {
+      setTimeout(() => {
+        this.isUserDropdownVisible = false;
+      }, 100);
+    },
+    selectUserSuggestion(user) {
+      this.navigateToUserProfile(user);
+      this.isUserDropdownVisible = false;
+      this.$refs.userInput.blur(); // Lose focus of the input
+      this.userSearchQuery = ''; // Clear the search query
+    },
+    searchUsers() {
+      if (this.userSearchQuery.length > 0) {
+        this.filteredUserSuggestions = this.users.filter((user) =>
+          user.name.toLowerCase().includes(this.userSearchQuery.toLowerCase())
+        );
+      } else {
+        this.filteredUserSuggestions = [];
+      }
+    },
+    searchRestaurants() {
       if (this.searchQuery.length > 0) {
-        // Filter the restaurants fetched from the API
-        this.filteredSuggestions = this.restaurants.filter(restaurant =>
+        this.filteredRestaurantSuggestions = this.restaurants.filter((restaurant) =>
           restaurant.name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       } else {
-        this.filteredSuggestions = [];
+        this.filteredRestaurantSuggestions = [];
       }
     },
-    selectSuggestion(name) {
-      this.searchQuery = name;
-      this.filteredSuggestions = []; 
+    navigateToRestaurant(restaurant) {
+      this.$router.push(`/restaurant/${restaurant.id}`);
     },
-    async navigateToRestaurant(restaurant) {
-      const user = auth.currentUser;
-      // Check if user is authenticated
-      if (user) {
-
-        this.$router.push(`/restaurant/${restaurant.id}`);
-
-        // Clear the search query
-        this.searchQuery = '';
-        this.filteredSuggestions = [];
-      } 
+    navigateToUserProfile(user) {
+      this.$router.push(`/user/${user.id}`);
     },
-  },
+    showDropdown() {
+      this.isDropdownVisible = true;
+    },
+    hideDropdown() {
+      setTimeout(() => {
+        this.isDropdownVisible = false;
+      }, 100);
+    },
+    selectSuggestion(suggestion) {
+      this.navigateToRestaurant(suggestion); 
+      this.isDropdownVisible = false;
+      this.$refs.restaurantInput.blur(); // Lose focus of the input
+      this.searchQuery = ''; // Clear the search query
+    },
+  }
 };
 </script>
 

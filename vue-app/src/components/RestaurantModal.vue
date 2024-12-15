@@ -13,7 +13,7 @@
             <p><strong>Address:</strong> {{ restaurant.address || 'N/A' }}</p>
             <p><strong>Phone:</strong> {{ restaurant.tel || 'N/A' }}</p>
             <p><strong>Price Range:</strong> {{ getPriceRange(restaurant.price_range) }}</p>
-            <p><strong>Rating:</strong> {{ restaurant.rating || 'N/A' }} / 5</p>
+            <p><strong>Rating:</strong> {{(Math.round(restaurant.rating * 100) / 100).toFixed(2) || 'N/A' }} / 5</p>
 
             <p><strong>Opening Hours:</strong></p>
             <ul>
