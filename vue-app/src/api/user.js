@@ -19,7 +19,7 @@ const getListUser =  async function(limit, pages, search) {
         q: search || ''
     });
     try {
-        const response = await fetch(`${ENDPOINT}/user?${query}`, {
+        const response = await fetch(`${ENDPOINT}/users?${query}`, {
             method: 'GET',
             headers: {
        //         'Authorization': `Bearer ${token}`,
@@ -32,14 +32,14 @@ const getListUser =  async function(limit, pages, search) {
         }
 
         const data = await response.json();
-        return data.restaurants;
+        return data;
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
 
 };
 
-const getUserById = async function() {
+const getUserById = async function(userId) {
     
     //const token = getAuthToken(); // get token with local storage
     /*
@@ -49,14 +49,9 @@ const getUserById = async function() {
         return;
     }
 */
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-        console.error('No user id found');
-        console.warn('Please login');
-    }
 
     try {
-        const response = await fetch(`${ENDPOINT}/user/:${userId}`, {
+        const response = await fetch(`${ENDPOINT}/users/${userId}`, {
             method: 'GET',
             headers: {
   //              'Authorization': `Bearer ${token}`,
@@ -69,14 +64,14 @@ const getUserById = async function() {
         }
 
         const data = await response.json();
-        return data.restaurants;
+        return data;
     } catch (error) {
         console.error('Error fetching restaurants:', error);
     }
 
 };
 
-const getUserFavorites = async function(limit, pages) {
+const getUserFavorites = async function(id, limit, pages) {
     /*
     const token = getAuthToken(); // get token with local storage
     if (!token) {
@@ -85,13 +80,8 @@ const getUserFavorites = async function(limit, pages) {
         return;
     }
 */
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-        console.error('No user id found');
-        console.warn('Please login');
-    }
 
-    //TODO fix query
+
     const query = new URLSearchParams({
         limit: limit || 10,
         page: pages || 1
@@ -99,7 +89,7 @@ const getUserFavorites = async function(limit, pages) {
 
 
     try {
-        const response = await fetch(`${ENDPOINT}/user/:${userId}/favorites?${query}`, {
+        const response = await fetch(`${ENDPOINT}/users/${id}/favorites?${query}`, {
             method: 'GET',
             headers: {
   //              'Authorization': `Bearer ${token}`,
@@ -127,7 +117,7 @@ const postFollowUser = async function(id) {
         return;
     }
     */
-    await fetch(`${ENDPOINT}/user/:${id}/follow`, {
+    await fetch(`${ENDPOINT}/users/${id}/follow`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -155,7 +145,7 @@ const postUnfollowUser = async function(id) {
         return;
     }
         */
-    await fetch(`${ENDPOINT}/user/:${id}/unfollow`, {
+    await fetch(`${ENDPOINT}/users/${id}/unfollow`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

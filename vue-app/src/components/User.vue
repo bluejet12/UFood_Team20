@@ -1,225 +1,291 @@
 <template>
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-20 col-lg-20">
-        <div class="card shadow-sm border-0 rounded-lg">
-          <div class="row g-0">
-            <!-- Profile Details Section -->
-            <div class="col-md-6">
-              <div class="card-header text-center text-white py-4" style="background-color: #90CAF9;">
-                <h2 class="mb-0">Your Profile UFood</h2>
-              </div>
-              <div class="card-body text-center">
-                <div class="profile-section d-flex flex-column align-items-center">
-                  <!-- Display User Avatar -->
-                  <img
-                      :src="gravatarUrl"
-                      alt="User Avatar"
-                      class="rounded-circle mb-3 border border-light shadow-sm"
-                      style="width: 120px; height: 120px; object-fit: cover;"
-                  />
+  <div :inert="showRestaurantModal">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-20 col-lg-20">
+          <div class="card shadow-sm border-0 rounded-lg">
+            <div class="row g-0">
+              <!-- Profile Details Section -->
+              <div class="col-md-6">
+                <div class="card-header text-center text-white py-4" style="background-color: #90CAF9;">
+                  <h2 class="mb-0">Your Profile UFood</h2>
+                </div>
+                <div class="card-body text-center">
+                  <div class="profile-section d-flex flex-column align-items-center">
+                    <!-- Display User Avatar -->
+                    <img
+                        :src="gravatarUrl"
+                        alt="User Avatar"
+                        class="rounded-circle mb-3 border border-light shadow-sm"
+                        style="width: 120px; height: 120px; object-fit: cover;"
+                    />
 
-                  <!-- Display User Name -->
-                  <h4 class="mb-2 text-dark font-weight-bold">{{ user?.displayName || 'Anonymous User' }}</h4>
+                    <!-- Display User Name -->
+                    <h4 class="mb-2 text-dark font-weight-bold">{{ user.name || 'Anonymous User' }}</h4>
 
-                  <!-- Display User Score -->
-                  <div class="user-score mb-4">
-                    <h5 class="text-secondary">
-                      Your Score:
-                      <span class="badge badge-pill badge-light px-3 py-2">{{ userScore }} Points</span>
-                    </h5>
-                  </div>
-
-                  <!-- Display Recently Viewed Restaurants -->
-                  <h5 class="text-left w-100 mt-3 mb-2 text-muted">Recently Visited Restaurants</h5>
-                  <ul v-if="recentRestaurants.length > 0" class="list-group w-100 shadow-sm">
-                      <li 
-                        v-for="restaurant in recentRestaurants" 
-                        :key="restaurant.id" 
-                        class="list-group-item d-flex justify-content-between align-items-center"
-                        @click="openModal(restaurant)"
-                      >
-                        <!-- Display Restaurant Name -->
-                        <span class="text-dark">{{ restaurant.name || 'Loading name...' }}</span>
-
-                        <!-- Display Visit Count -->
-                        <span class="badge badge-primary badge-pill">{{ restaurant.visitCount }} visits</span>
-                        <div>
-                          <button @click="openRestaurantModal(restaurant.id)">View Details</button>
-
-
-                          <!-- Restaurant Modal Component -->
-                          <RestaurantModal
-                              :show="showRestaurantModal"
-                              :restaurant=selectedResto
-                              @update:show="showRestaurantModal = $event"
-                          />
-                        </div>
-                      </li>
-                    </ul>
-
-                    <!-- If no recently viewed restaurants, show this message -->
-                    <div v-else class="text-center mt-4">
-                      <p class="text-muted">No recently viewed restaurants yet.</p>
-                      <a href="#" @click.prevent="navigateToHome" class="btn btn-outline-dark btn-sm">
-                        Explore Restaurants
-                      </a>
-                    </div>
-
-                  <!-- Display Favorite Lists -->
-                  <h5 class="text-left w-100 mt-4 mb-2 text-muted">Your Favorite Lists</h5>
-                  <div class="mb-3">
-                    <label>
-                      <input
-                          type="radio"
-                          v-model="showAllFavorites"
-                          value="all"
-                          class="form-check-input"
-                      />
-                      All Favorite Lists
-                    </label>
-                    <label class="ml-3">
-                      <input
-                          type="radio"
-                          v-model="showAllFavorites"
-                          value="user"
-                          class="form-check-input"
-                      />
-                      Your Favorite Lists
-                    </label>
-                  </div>
-
-                  <!-- Display Favorite Lists -->
-                  <div v-if="filteredFavoriteListsComputed.length === 0">
-                    <h5 class="text-left w-100 mt-4 mb-2 text-muted">Create Your Favorite List</h5>
-                    <div class="mb-3">
-                      <input
-                          type="text"
-                          v-model="favoriteListName"
-                          class="form-control"
-                          placeholder="Enter favorite list name"
-                      />
-                      <button
-                          @click="createFavoriteList"
-                          class="btn btn-primary mt-2"
-                          :disabled="!favoriteListName.trim()"
-                      >
-                        Create Favorite List
-                      </button>
-                    </div>
-                  </div>
-                  <div v-else>
-                    <ul class="list-group w-100 shadow-sm">
-                      <li
-                          v-for="list in filteredFavoriteListsComputed"
-                          :key="list.id"
-                          class="list-group-item d-flex justify-content-between align-items-center"
-                          @click="fetchRestaurantsForList(list.id)"
-                      >
-                        <span class="text-dark">{{ list.name }}</span>
-                        <span class="badge badge-secondary badge-pill">{{ list.restaurants.length }} restaurants</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Display Restaurants in Selected List -->
-                  <div v-if="selectedListRestaurants.length >= 0" class="mt-4">
-                    <div class="d-flex align-items-center mb-4">
-                      <!-- Restaurant List Name and Edit Button -->
-                      <h5 class="text-left w-100 mt-3 mb-2 text-muted d-flex align-items-center">
-      <span v-if="isEditingName" class="mr-2">
-        <input
-            v-model="editedListName"
-            class="form-control d-inline-block w-auto"
-            type="text"
-        />
-      </span>
-                        <span v-else>{{ selectedList?.name || 'No List Selected' }}</span>
-
-                        <!-- Edit List Name Button -->
-                        <button v-if="!isEditingName" @click="editListName" class="btn btn-warning btn-sm ml-3">
-                          <i class="fa fa-edit"></i> Edit
-                        </button>
-
-                        <!-- Save List Name Button -->
-                        <button v-if="isEditingName" @click="saveListName" class="btn btn-primary btn-sm ml-3">
-                          <i class="fa fa-save"></i> Save
-                        </button>
-                        <!-- Add Restaurant to List -->
-                        <div class="mb-3">
-                          <button @click="toggleRestaurantListModal" class="btn btn-success btn-sm ml-3">
-                            <i class="fa fa-plus"></i> Add Restaurant to Favorite List
-                          </button>
-                        </div>
-
-                        <!-- Delete List -->
-                        <div class="mb-3">
-                          <button @click.stop="deleteFavoriteList(selectedList.id)" class="btn btn-danger btn-sm ml-3">
-                            <i class="fa fa-trash"></i> Delete List
-                          </button>
-                        </div>
+                    <!-- Display User Score -->
+                    <div class="user-score mb-4">
+                      <h5 class="text-secondary">
+                        Your Score:
+                        <span class="badge badge-pill badge-light px-3 py-2">{{ userScore }} Points</span>
                       </h5>
                     </div>
 
+                    <!-- Display Recently Viewed Restaurants -->
+                    <h5 class="text-left w-100 mt-3 mb-2 text-muted">Recently Visited Restaurants</h5>
+                    <ul v-if="recentRestaurants.length > 0" class="list-group w-100 shadow-sm">
+                        <li 
+                          v-for="restaurant in recentRestaurants" 
+                          :key="restaurant.id" 
+                          class="list-group-item d-flex justify-content-between align-items-center"
+                          @click="openModal(restaurant)"
+                        >
+                          <!-- Display Restaurant Name -->
+                          <span class="text-dark">{{ restaurant.name || 'Loading name...' }}</span>
 
+                          <!-- Display Visit Count -->
+                          <span class="badge badge-primary badge-pill">{{ restaurant.visitCount }} visits</span>
+                          <div>
+                            <button @click="openRestaurantModal(restaurant.id)">View Details</button>
+                          </div>
+                        </li>
+                      </ul>
 
-                    <!-- Restaurant List Modal Component -->
-                    <RestaurantChoiceModal
-                        :show="showRestaurantListModal"
-                        :allRestaurants="allRestaurant"
-                        @update:show="showRestaurantListModal = $event"
-                        @add-restaurants="addRestaurantToFavoriteList"
-                    />
-                    <!-- Visite ReadOnly Modal Component -->
-                    <ModalVisiteReadOnly 
-                      v-if="showModal" 
-                      :restaurantId="selectedRestaurant.id" 
-                      :nomRestaurant="selectedRestaurant.name"
-                      @fermer="closeModal"
-                    />
+                      <!-- If no recently viewed restaurants, show this message -->
+                      <div v-else class="text-center mt-4">
+                        <p class="text-muted">No recently viewed restaurants yet.</p>
+                        <a href="#" @click.prevent="navigateToHome" class="btn btn-outline-dark btn-sm">
+                          Explore Restaurants
+                        </a>
+                      </div>
 
-                    <!-- Display Restaurants in the List -->
-                    <ul class="list-group w-100 shadow-sm">
-                      <li v-if="selectedListRestaurants.length === 0" class="list-group-item text-center">
-                        No Restaurant
-                      </li>
+                    <!-- Display Favorite Lists -->
+                    <h5 class="text-left w-100 mt-4 mb-2 text-muted">Your Favorite Lists</h5>
+                    <div class="mb-3">
+                      <label>
+                        <input
+                            type="radio"
+                            v-model="showAllFavorites"
+                            value="all"
+                            class="form-check-input"
+                        />
+                        All Favorite Lists
+                      </label>
+                      <label class="ml-3">
+                        <input
+                            type="radio"
+                            v-model="showAllFavorites"
+                            value="user"
+                            class="form-check-input"
+                        />
+                        Your Favorite Lists
+                      </label>
+                    </div>
 
-                      <!-- Loop through the restaurants if they exist -->
-                      <li v-for="restaurant in selectedListRestaurants" :key="restaurant.id" class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ selectedListRestaurantsName[restaurant.id] || 'Loading name...' }}
-                        <button @click="deleteRestaurantToFavoriteList(restaurant.id)" class="btn btn-danger btn-sm ml-2">
-                          <i class="fa fa-trash"></i> Remove
+                    <!-- Display Favorite Lists -->
+                    <div v-if="filteredFavoriteListsComputed.length === 0">
+                      <h5 class="text-left w-100 mt-4 mb-2 text-muted">Create Your Favorite List</h5>
+                      <div class="mb-3">
+                        <input
+                            type="text"
+                            v-model="favoriteListName"
+                            class="form-control"
+                            placeholder="Enter favorite list name"
+                        />
+                        <button
+                            @click="createFavoriteList"
+                            class="btn btn-primary mt-2"
+                            :disabled="!favoriteListName.trim()"
+                        >
+                          Create Favorite List
                         </button>
-                      </li>
-                    </ul>
+                      </div>
+                    </div>
+                    <div v-else>
+                      <ul class="list-group w-100 shadow-sm">
+                        <li
+                            v-for="list in filteredFavoriteListsComputed"
+                            :key="list.id"
+                            class="list-group-item d-flex justify-content-between align-items-center"
+                            @click="fetchRestaurantsForList(list.id)"
+                        >
+                          <span class="text-dark">{{ list.name }}</span>
+                          <span class="badge badge-secondary badge-pill">{{ list.restaurants.length }} restaurants</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <!-- Display Restaurants in Selected List -->
+                    <div v-if="selectedListRestaurants.length >= 0" class="mt-4">
+                      <div class="d-flex align-items-center mb-4">
+                        <!-- Restaurant List Name and Edit Button -->
+                        <h5 class="text-left w-100 mt-3 mb-2 text-muted d-flex align-items-center">
+                          <span v-if="isEditingName" class="mr-2">
+                            <input
+                                v-model="editedListName"
+                                class="form-control d-inline-block w-auto"
+                                type="text"
+                            />
+                          </span>
+                          <span v-else>{{ selectedList?.name || 'No List Selected' }}</span>
+
+                          <!-- Edit List Name Button -->
+                          <button v-if="!isEditingName" @click="editListName" class="btn btn-warning btn-sm ml-3">
+                            <i class="fa fa-edit"></i> Edit
+                          </button>
+
+                          <!-- Save List Name Button -->
+                          <button v-if="isEditingName" @click="saveListName" class="btn btn-primary btn-sm ml-3">
+                            <i class="fa fa-save"></i> Save
+                          </button>
+                          <!-- Add Restaurant to List -->
+                          <div class="mb-3">
+                            <button @click="toggleRestaurantListModal" class="btn btn-success btn-sm ml-3">
+                              <i class="fa fa-plus"></i> Add Restaurant to Favorite List
+                            </button>
+                          </div>
+
+                          <!-- Delete List -->
+                          <div class="mb-3">
+                            <button @click.stop="deleteFavoriteList(selectedList.id)" class="btn btn-danger btn-sm ml-3">
+                              <i class="fa fa-trash"></i> Delete List
+                            </button>
+                          </div>
+                        </h5>
+                      </div>
+
+                      <!-- Display Restaurants in the List -->
+                      <ul class="list-group w-100 shadow-sm">
+                        <li v-if="selectedListRestaurants.length === 0" class="list-group-item text-center">
+                          No Restaurant
+                        </li>
+
+                        <!-- Loop through the restaurants if they exist -->
+                        <li v-for="restaurant in selectedListRestaurants" :key="restaurant.id" class="list-group-item d-flex justify-content-between align-items-center">
+                          {{ selectedListRestaurantsName[restaurant.id] || 'Loading name...' }}
+                          <button @click="deleteRestaurantToFavoriteList(restaurant.id)" class="btn btn-danger btn-sm ml-2">
+                            <i class="fa fa-trash"></i> Remove
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+
+
                   </div>
+                </div>
+              </div>
 
+              <!-- Image Section -->
+              <div class="col-md-6 d-none d-md-block">
+                <img
+                    src="@/assets/ProfilePage.png"
+                    alt="Profile Illustration"
+                    class="img-fluid rounded-end"
+                    style="object-fit: contain; width: 100%; height: auto;" />
+              </div>
+            </div>
+            <div class="card-footer bg-light text-center">
+              <small class="text-muted">Keep exploring to earn more points!</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Followers and Container List -->
+      <div class="container mt-4">
+        <div class="row justify-content-center">
+          <!-- Followers List -->
+          <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0 rounded-lg">
+              <div class="card-header text-center text-white py-2" style="background-color: #90CAF9;">
+                <h5 class="mb-0">Followers</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-group list-group-flush">
+                  <li 
+                    v-for="follower in list_Followers" 
+                    :key="follower.id" 
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    @click="navigateToUser(follower)"
+                  >
+                    <span>{{ follower.name }}</span>
+                    <span class="text-muted small">{{ follower.email }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
+          <!-- Following List -->
+          <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0 rounded-lg">
+              <div class="card-header text-center text-white py-2" style="background-color: #90CAF9;">
+                <h5 class="mb-0">Following</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-group list-group-flush">
+                  <li 
+                    v-for="followed in list_Followings" 
+                    :key="followed.id" 
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    @click="navigateToUser(followed)"
+                  >
+                    <span>{{ followed.name }}</span>
+                    <span class="text-muted small">{{ followed.email }}</span>
+                    <button @click="openUnfollowModal(followed)" class="btn btn-danger btn-sm">Unfollow</button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+    <!-- Unfollow Confirmation Modal -->
+          <div v-if="showUnfollowModal" class="modal fade show" tabindex="-1" style="display: block;">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Confirm Unfollow</h5>
+                  <button type="button" class="btn-close" @click="closeUnfollowModal"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Are you sure you want to unfollow {{ selectedUser.name }}?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" @click="closeUnfollowModal">Cancel</button>
+                  <button type="button" class="btn btn-danger" @click="confirmUnfollow">Unfollow</button>
                 </div>
               </div>
             </div>
-
-            <!-- Image Section -->
-            <div class="col-md-6 d-none d-md-block">
-              <img
-                  src="@/assets/ProfilePage.png"
-                  alt="Profile Illustration"
-                  class="img-fluid rounded-end"
-                  style="object-fit: contain; width: 100%; height: auto;" />
-            </div>
-          </div>
-          <div class="card-footer bg-light text-center">
-            <small class="text-muted">Keep exploring to earn more points!</small>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Restaurant Modal Component -->
+  <RestaurantModal
+      :show="showRestaurantModal"
+      :restaurant=selectedResto
+      @update:show="showRestaurantModal = $event"
+  />
+  <!-- Restaurant List Modal Component -->
+  <RestaurantChoiceModal
+      :show="showRestaurantListModal"
+      :allRestaurants="allRestaurant"
+      @update:show="showRestaurantListModal = $event"
+      @add-restaurants="addRestaurantToFavoriteList"
+  />
+  <!-- Visite ReadOnly Modal Component -->
+  <ModalVisiteReadOnly 
+    v-if="showModal" 
+    :restaurantId="selectedRestaurant.id" 
+    :nomRestaurant="selectedRestaurant.name"
+    @fermer="closeModal"
+  />
 </template>
 
 <script>
-import { auth } from '../../firebaseConfig'; // Adjust the path as needed
-import { onAuthStateChanged } from 'firebase/auth';
+import userService from "@/api/user";
 import favorites from "../api/favorites";
 import restaurant from "@/api/restaurant";
 import RestaurantChoiceModal from "@/components/RestaurantChoiceModal.vue";
@@ -227,6 +293,7 @@ import {VisiteService} from "@/api/Visite";
 import ModalVisiteReadOnly from './ModalVisiteReadOnly.vue';
 import RestaurantModal from "@/components/RestaurantModal.vue";
 import CryptoJS from 'crypto-js';
+import auth from "@/api/auth";
 
 export default {
   name: 'ProfilePage',
@@ -254,6 +321,13 @@ export default {
       selectedRestaurant: {},
       showRestaurantModal: false,
       selectedResto: null,
+
+      showUnfollowModal: false,
+      selectedUser: null,
+      list_Followers: [],
+      list_Followings: [],
+
+
     };
   },
   created() {
@@ -278,14 +352,20 @@ export default {
         console.error("No list selected to edit.");
       }
     },
-    fetchUser() {
-      // Fetch authenticated user data from Firebase
-      onAuthStateChanged(auth, (user) => {
-        this.user = user;
-        if (user) {
-          this.fetchRecentRestaurants();
+    async fetchUser() {
+      try {
+        const token = localStorage.getItem('token'); // Retrieve the stored token
+        if (token) {
+          const response = await auth.getTokenInfo(token); // Fetch user info from the token
+          if (response) {
+            this.user = response; // Directly assign API response to user
+            console.log("User fetched successfully:", this.user);
+          }
         }
-      });
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        this.user = null;
+      }
     },
     toggleRestaurantListModal() {
       this.showRestaurantListModal = !this.showRestaurantListModal;  // Toggle modal visibility
@@ -350,6 +430,9 @@ export default {
       // Navigate to the homepage
       this.$router.push('/');
     },
+    navigateToUser(selectedUser) {
+      this.$router.push(`/user/${selectedUser.id}`);
+    },
 
     async createFavoriteList() {
       try {
@@ -375,13 +458,12 @@ export default {
         this.showAllFavoritesData = [];
       }
     },
+    //TODO CHECK IF THE TOKKEN IS PASS THE USER GET RESPONSE
     async fetchFavoriteListsUser() {
-      const response = await favorites.getFavorites(); // Fetch all favorite lists
-      console.log('All Favorite Lists Response:', response); // Log the response
+      const response = await userService.getUserFavorites(this.user.id); // Fetch all favorite lists
 
       if (response && response.items) {
-        // Filter the favorite lists where owner.id is '618e8c6709dd9f0004fd6a97'
-        this.filteredFavoriteLists = response.items.filter(list => list.owner.id === '618e8c6709dd9f0004fd6a97');
+        this.filteredFavoriteLists = response.items;
       } else {
         this.filteredFavoriteLists = [];
       }

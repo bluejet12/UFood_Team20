@@ -15,7 +15,7 @@ export const VisiteService = {
      * @returns {Promise} - Une promesse résolvant la réponse de l'API.
      */
     async ajouterVisite(userId, restaurantId, date, cote, commentaire) {
-        userId = '61916127f8f8790004fd287e';
+        //userId = '61916127f8f8790004fd287e';
         try {
             const response = await axios.post(`${BASE_URL}/users/${userId}/restaurants/visits`, {
                 restaurant_id: restaurantId,
@@ -36,7 +36,7 @@ export const VisiteService = {
      * @returns {Promise} - Une promesse résolvant les données des visites de l'utilisateur.
      */
     async obtenirVisites(userId) {
-        userId = '61916127f8f8790004fd287e';
+        //userId = '61916127f8f8790004fd287e';
             try {
                 const response = await fetch(`${BASE_URL}/users/${userId}/restaurants/visits`, {
                     method: 'GET',

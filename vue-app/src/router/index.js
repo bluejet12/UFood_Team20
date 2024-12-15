@@ -5,6 +5,7 @@ import AuthLogin from '@/components/Authentification/AuthLogin.vue';
 import AuthRegister from '@/components/Authentification/AuthRegister.vue';
 import User from '@/components/User.vue';
 import Restaurant from "@/components/Restaurant.vue";
+import UserReadOnly from '@/components/UserReadOnly.vue';
 // Define your routes
 const routes = [
     {
@@ -27,6 +28,12 @@ const routes = [
         component: Restaurant,
         props: true,
     },
+    {
+        path: '/user/:id',
+        name: 'user',
+        component: UserReadOnly,
+        props: true,
+    }
 ];
 
 // Create the router instance

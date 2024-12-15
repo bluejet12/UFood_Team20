@@ -65,6 +65,7 @@
 
 <script>
 import auth from "@/api/auth";
+import {eventBus} from "@/utils/eventBus";
 
 export default {
   name: 'AuthRegister',
@@ -79,12 +80,27 @@ export default {
   methods: {
     async register() {
       try {
+        // Étape 1 : Inscription
         const result = await auth.signup(this.name, this.email, this.password);
+        if (!result) {
+          throw new Error("Signup failed.");
+        }
         console.log("Signup successful:", result);
-        this.$router.push('/'); // Redirect to home or another page
+
+        // Étape 2 : Connexion automatique après inscription
+        const loginResponse = await auth.login(this.email, this.password);
+        if (!loginResponse) {
+          throw new Error("Login after signup failed.");
+        }
+        eventBus.emit('user-logged-in');
+
+        console.log("Login successful after signup.");
+
+        // Étape 3 : Redirection vers la page d'accueil
+        this.$router.push('/');
       } catch (error) {
         this.error = error.message || "An unexpected error occurred.";
-        console.error("Error during registration:", error);
+        console.error("Error during registration or login:", error);
       }
     },
     navigateToLogin() {

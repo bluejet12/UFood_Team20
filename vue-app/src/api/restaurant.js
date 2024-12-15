@@ -1,4 +1,3 @@
-//import { getAuthToken } from '../utils/auth';
 
 const ENDPOINT = 'https://ufoodapi.herokuapp.com';
 
