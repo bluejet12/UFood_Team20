@@ -170,6 +170,7 @@ import userService from "../api/user";
 import { VisiteService } from "@/api/Visite";
 
 import RestaurantModal from "@/components/RestaurantModal.vue";
+import Cookies from "js-cookie";
 
 export default {
 
@@ -177,6 +178,7 @@ components: {RestaurantModal},
 data() {
   return {
     user: null,
+    masterUser: null,
     userScore: 0, // Variable to hold the user's score
     defaultAvatar: 'https://via.placeholder.com/150/000000/FFFFFF/?text=Avatar', // Default avatar if none exists
     allRestaurant: [],
@@ -352,12 +354,13 @@ methods: {
   //TODO WHAT PASS IN TOKKEN IF THE USER RESPONSE IS PASS OR NOT 
   async checkIfFollowing() {
       try {
-        //const response = await userService.checkIfFollowing(this.user.id);
-        //this.isFollowing = response.isFollowing;
+        const masterUserId = Cookies.get("userId");
+        this.masterUser = await userService.getUserById(masterUserId);
+        this.isFollowing = this.masterUser.following.some(following => following.id === this.user.id);
       } catch (error) {
         console.error('Error checking if following:', error);
       }
-  },
+    },
   toggleFollow() {
     try {
       if (this.isFollowing) {

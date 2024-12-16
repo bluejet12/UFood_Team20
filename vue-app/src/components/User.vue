@@ -1,5 +1,6 @@
 <template>
-  <div :inert="showRestaurantModal">
+  <div>
+    <div :inert="showRestaurantModal"> 
     <div class="container mt-5">
       <div class="row justify-content-center">
         <div class="col-md-20 col-lg-20">
@@ -21,7 +22,7 @@
                     />
 
                     <!-- Display User Name -->
-                    <h4 class="mb-2 text-dark font-weight-bold">{{ user.name || 'Anonymous User' }}</h4>
+                    <h4 class="mb-2 text-dark font-weight-bold">{{ user?.name || 'Anonymous User' }}</h4>
 
                     <!-- Display User Score -->
                     <div class="user-score mb-4">
@@ -183,6 +184,54 @@
                     class="img-fluid rounded-end"
                     style="object-fit: contain; width: 100%; height: auto;" />
               </div>
+              <!-- Followers and Container List -->
+                <div class="container mt-4">
+                  <div class="row justify-content-center">
+                    <!-- Followers List -->
+                    <div class="col-md-5 mb-4">
+                      <div class="card shadow-sm border-0 rounded-lg">
+                        <div class="card-header text-center text-white py-2" style="background-color: #90CAF9;">
+                          <h5 class="mb-0">Followers</h5>
+                        </div>
+                        <div class="card-body">
+                          <ul class="list-group list-group-flush">
+                            <li 
+                              v-for="follower in list_Followers" 
+                              :key="follower.id" 
+                              class="list-group-item d-flex justify-content-between align-items-center"
+                              @click="navigateToUser(follower)"
+                            >
+                              <span>{{ follower.name }}</span>
+                              <span class="text-muted small">{{ follower.email }}</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Following List -->
+                    <div class="col-md-5 mb-4">
+                    <div class="card shadow-sm border-0 rounded-lg">
+                      <div class="card-header text-center text-white py-2" style="background-color: #90CAF9;">
+                        <h5 class="mb-0">Following</h5>
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                          <li 
+                            v-for="followed in list_Followings" 
+                            :key="followed.id" 
+                            class="list-group-item d-flex justify-content-between align-items-center"
+                            @click="navigateToUser(followed)"
+                          >
+                            <span>{{ followed.name }}</span>
+                            <span class="text-muted small">{{ followed.email }}</span>
+                            <button @click.stop="unfollowUser(followed)" class="btn btn-danger btn-sm">Unfollow</button>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                    
             </div>
             <div class="card-footer bg-light text-center">
               <small class="text-muted">Keep exploring to earn more points!</small>
@@ -190,82 +239,14 @@
           </div>
         </div>
       </div>
-      
-      <!-- Followers and Container List -->
-      <div class="container mt-4">
-        <div class="row justify-content-center">
-          <!-- Followers List -->
-          <div class="col-md-5 mb-4">
-            <div class="card shadow-sm border-0 rounded-lg">
-              <div class="card-header text-center text-white py-2" style="background-color: #90CAF9;">
-                <h5 class="mb-0">Followers</h5>
-              </div>
-              <div class="card-body">
-                <ul class="list-group list-group-flush">
-                  <li 
-                    v-for="follower in list_Followers" 
-                    :key="follower.id" 
-                    class="list-group-item d-flex justify-content-between align-items-center"
-                    @click="navigateToUser(follower)"
-                  >
-                    <span>{{ follower.name }}</span>
-                    <span class="text-muted small">{{ follower.email }}</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Following List -->
-          <div class="col-md-5 mb-4">
-            <div class="card shadow-sm border-0 rounded-lg">
-              <div class="card-header text-center text-white py-2" style="background-color: #90CAF9;">
-                <h5 class="mb-0">Following</h5>
-              </div>
-              <div class="card-body">
-                <ul class="list-group list-group-flush">
-                  <li 
-                    v-for="followed in list_Followings" 
-                    :key="followed.id" 
-                    class="list-group-item d-flex justify-content-between align-items-center"
-                    @click="navigateToUser(followed)"
-                  >
-                    <span>{{ followed.name }}</span>
-                    <span class="text-muted small">{{ followed.email }}</span>
-                    <button @click="openUnfollowModal(followed)" class="btn btn-danger btn-sm">Unfollow</button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-    <!-- Unfollow Confirmation Modal -->
-          <div v-if="showUnfollowModal" class="modal fade show" tabindex="-1" style="display: block;">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Confirm Unfollow</h5>
-                  <button type="button" class="btn-close" @click="closeUnfollowModal"></button>
-                </div>
-                <div class="modal-body">
-                  <p>Are you sure you want to unfollow {{ selectedUser.name }}?</p>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="closeUnfollowModal">Cancel</button>
-                  <button type="button" class="btn btn-danger" @click="confirmUnfollow">Unfollow</button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
-  </div>
-
+    </div>
   <!-- Restaurant Modal Component -->
   <RestaurantModal
       :show="showRestaurantModal"
-      :restaurant=selectedResto
+      :restaurant="selectedResto"
       @update:show="showRestaurantModal = $event"
   />
   <!-- Restaurant List Modal Component -->
@@ -282,6 +263,8 @@
     :nomRestaurant="selectedRestaurant.name"
     @fermer="closeModal"
   />
+    
+  </div>
 </template>
 
 <script>
@@ -323,8 +306,6 @@ export default {
       selectedRestaurant: {},
       showRestaurantModal: false,
       selectedResto: null,
-
-      showUnfollowModal: false,
       selectedUser: null,
       list_Followers: [],
       list_Followings: [],
@@ -333,14 +314,19 @@ export default {
     };
   },
   created() {
-    this.fetchUser();
-    this.fetchRecentRestaurants();
-    this.fetchFavoriteLists();
-    this.fetchFavoriteListsUser();
-    this.fetchAllRestaurant();
-    this.fetchvisitedRestaurant();
+  this.initializeData();
+},
+methods: {
+  async initializeData() {
+    await this.fetchUser();
+    if (this.user) {
+      await this.fetchFavoriteListsUser();
+    }
+    await this.fetchRecentRestaurants();
+    await this.fetchFavoriteLists();
+    await this.fetchAllRestaurant();
+    await this.fetchvisitedRestaurant();
   },
-  methods: {
     async openRestaurantModal(restaurantId) {
       this.getRestaurantByID(restaurantId);
       console.log("Selected Restaurant", this.selectedRestaurant)
@@ -361,6 +347,8 @@ export default {
           const response = await auth.getTokenInfo(); // Fetch user info using the token
           if (response) {
             this.user = response; // Assign the API response to the `user`
+            this.list_Followings = response.following;
+            this.list_Followers = response.follower;
             console.log("User fetched successfully:", this.user);
           }
         } else {
@@ -443,7 +431,15 @@ export default {
     navigateToUser(selectedUser) {
       this.$router.push(`/user/${selectedUser.id}`);
     },
-
+    // unfollow methode
+    async unfollowUser(followed) {
+      try {
+        await userService.postUnfollowUser(followed.id);
+        this.list_Followings = this.list_Followings.filter(user => user.id !== followed.id);
+      } catch (error) {
+        console.error('Error unfollowing user:', error);
+      }
+    },
     async createFavoriteList() {
       try {
         // Call the API to create the favorite list
@@ -468,6 +464,8 @@ export default {
         this.showAllFavoritesData = [];
       }
     },
+      
+
     //TODO CHECK IF THE TOKKEN IS PASS THE USER GET RESPONSE
     async fetchFavoriteListsUser() {
       const response = await userService.getUserFavorites(this.user.id); // Fetch all favorite lists

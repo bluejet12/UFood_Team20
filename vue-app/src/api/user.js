@@ -1,6 +1,9 @@
+import Cookies from "js-cookie";
+
 //import { getAuthToken } from '../utils/auth';
 const ENDPOINT = 'https://ufoodapi.herokuapp.com/unsecure';
 
+const ENPOINTSECURE = 'https://ufoodapi.herokuapp.com'
 
 const getListUser =  async function(limit, pages, search) {
 
@@ -109,6 +112,7 @@ const getUserFavorites = async function(id, limit, pages) {
 };
 
 const postFollowUser = async function(id) {
+    const token = Cookies.get("token");
     /*
     const token = getAuthToken(); // get token with local storage
     if (!token) {
@@ -117,11 +121,11 @@ const postFollowUser = async function(id) {
         return;
     }
     */
-    await fetch(`${ENDPOINT}/users/${id}/follow`, {
+    await fetch(`${ENPOINTSECURE}/follow`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-    //        'Authorization': `Bearer ${token}`,
+           'Authorization': token,
         },
         body: JSON.stringify({
             id: id,
@@ -138,6 +142,7 @@ const postFollowUser = async function(id) {
 
 const postUnfollowUser = async function(id) {
     //const token = getAuthToken(); // get token with local storage
+    const token = Cookies.get("token");
     /*
     if (!token) {
         console.error('No token found');
@@ -145,11 +150,11 @@ const postUnfollowUser = async function(id) {
         return;
     }
         */
-    await fetch(`${ENDPOINT}/users/${id}/unfollow`, {
+    await fetch(`${ENPOINTSECURE}/unfollow/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
-            //'Authorization': `Bearer ${token}`,
+            'Authorization': token,
         },
         body: JSON.stringify({
             id: id,

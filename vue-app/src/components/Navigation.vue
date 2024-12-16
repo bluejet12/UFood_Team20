@@ -53,7 +53,7 @@
         </div>
 
         <div
-          v-if="!user"
+          v-if="user"
           class="form-inline ml-3 position-relative search-container"
           ref="userInputContainer"
         >
