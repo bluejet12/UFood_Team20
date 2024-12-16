@@ -61,6 +61,7 @@
 </template>
 
 <script>
+import { auth as firebaseAuth } from '../../../firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import auth from "@/api/auth";
 import { eventBus } from '@/utils/eventBus';
@@ -105,7 +106,7 @@ export default {
     async loginWithGoogle() {
       const provider = new GoogleAuthProvider();
       try {
-        await signInWithPopup(auth, provider);
+        await signInWithPopup(firebaseAuth , provider);
 
         this.$router.push('/');
       } catch (error) {
