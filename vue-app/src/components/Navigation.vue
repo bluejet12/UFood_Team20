@@ -203,7 +203,7 @@ export default {
     },
     async loadUserList() {
       try {
-        const response = await userService.getListUser();
+        const response = await userService.getListUser(20);
         console.log(response.items);
         if (response && response.items) {
           this.users = response.items; // Assuming response.data contains the user list
