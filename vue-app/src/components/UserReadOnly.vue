@@ -8,7 +8,7 @@
               <!-- Profile Details Section -->
               <div class="col-md-12">
                 <div class="card-header text-center text-white py-4" style="background-color: #90CAF9;">
-                  <h2 class="mb-0">Profile</h2>
+                  <h2 class="mb-0">User Details</h2>
                 </div>
                 <div class="card-body text-center">
                   <div class="profile-section d-flex flex-column align-items-center">
