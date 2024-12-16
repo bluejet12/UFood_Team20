@@ -40,7 +40,7 @@
             {{ '$'.repeat(restaurant.price_range) }} -
             {{ restaurant.rating.toFixed(1) }}
           </router-link>
-          <button @click="ouvrirModalVisite(restaurant)" class="btn btn-sm btn-primary ml-3">
+          <button @click="ouvrirModalVisite(restaurant)" class="btn btn-sm btn-primary ml-3" v-if="userId">
             Marquer comme visité
           </button>
         </li>
